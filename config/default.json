@@ -7,7 +7,7 @@
         "password": "12345678",
         "database": "InternetBanking"
     },
-    "user": {
+    "interbank": {
         "partnerCode": "B"
     }
 }
