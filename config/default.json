@@ -4,8 +4,13 @@
         "host": "localhost",
         "port": 3306,
         "user": "root",
-        "password": "t2ntruong811",
+        "password": "12345678",
         "database": "InternetBanking"
+    },
+    "auth": {
+        "secret": "secretKey",
+        "expiresIn": "1m",
+        "refreshTokenSz": 80
     },
     "interbank": {
         "partnerCode": "B",

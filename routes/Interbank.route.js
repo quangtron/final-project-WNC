@@ -15,7 +15,6 @@ router.get('/', async(req, res) => {
     res.json({
         cardNumber: rows[0].cardNumber,
         name: rows[0].Name,
-        money: rows[0].Money
     })
 })
 

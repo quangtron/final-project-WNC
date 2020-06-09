@@ -3,12 +3,19 @@ const morgan = require('morgan');
 require('express-async-errors');
 
 const verify = require('./middlewares/Interbank.mdw');
-const verifyTransferMoney = require('./middlewares/money.mdw')
+const verifyTransferMoney = require('./middlewares/money.mdw');
+const verifyToken = require('./middlewares/auth.mdw');
+
 const app = express();
 
 app.use(morgan('dev'));
 app.use(express.json());
 
+//users
+app.use('/auth', require('./routes/auth.route'));
+app.use('/user', verifyToken, require('./routes/users.route'));
+
+//API Interbank
 app.use('/api/users', verify, require('./routes/Interbank.route'));
 app.use('/api/transfer-money', verifyTransferMoney, require('./routes/money.route'));
 
@@ -24,5 +31,5 @@ app.use((err, req, res, next) => {
 
 const PORT = 3000;
 app.listen(PORT, _ => {
-    console.log(`API is running at http://localhost:${PORT}`);
+    console.log(`API is running at PORT: ${PORT}`);
 });
