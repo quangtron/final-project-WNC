@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 require('express-async-errors');
+const cors = require('cors');
 
 const verify = require('./middlewares/Interbank.mdw');
 const verifyTransferMoney = require('./middlewares/money.mdw');
@@ -10,6 +11,7 @@ const app = express();
 
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(cors());
 
 //users
 app.use('/auth', require('./routes/auth.route'));
@@ -29,7 +31,7 @@ app.use((err, req, res, next) => {
     res.status(errStatus).send('View error log in console.');
 })
 
-const PORT = 3000;
-app.listen(PORT, _ => {
+const PORT = 3333;
+app.listen(PORT, '0.0.0.0', _ => {
     console.log(`API is running at PORT: ${PORT}`);
 });

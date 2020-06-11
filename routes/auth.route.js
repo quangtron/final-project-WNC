@@ -19,14 +19,14 @@ router.post('/', async (req, res) => {
     }
 
     const userId = ret.ID;
-    const accessToken = generateAccessToken(userId);
-    const refreshToken = randToken.generate(config.auth.refreshTokenSz);
+    const access_token = generateAccessToken(userId);
+    const refresh_token = randToken.generate(config.auth.refreshTokenSz);
 
-    await userModel.updateRefreshToken(userId, refreshToken);
+    await userModel.updateRefreshToken(userId, refresh_token);
 
     return res.json({
-        accessToken,
-        refreshToken
+        access_token,
+        refresh_token
     })
 })
 
