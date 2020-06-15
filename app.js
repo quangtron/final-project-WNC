@@ -29,7 +29,8 @@ app.use('/api/transfer-money', verifyTransferMoney, require('./routes/money.rout
 app.use('/customers', require('./routes/customers.route'));
 //type-cards
 app.use('/type-cards', require('./routes/type_cards.route'));
-
+//cards
+app.use('/cards', require('./routes/cards.route'));
 
 app.use((req, res, next) => {
     res.status(404).send('NOT FOUND');

@@ -21,7 +21,7 @@ module.exports = {
     del: id => {
         return Type_Cards.findByIdAndRemove(id);
     },
-    find_id_by_name_type: name => {
-        return Type_Cards.findOne({name_type: name}).select('_id');
+    find_id_by_name_type: _name_type => {
+        return Type_Cards.findOne({name_type: _name_type}).select('_id');
     }
 }

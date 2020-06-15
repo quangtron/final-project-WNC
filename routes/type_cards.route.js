@@ -18,9 +18,9 @@ route.get('/:id', async (req, res) => {
 })
 
 route.post('/add', async (req, res) => {
-    const new_customer = req.body;
+    const new_type_card = req.body;
     
-    const ret = await type_cards_model.add(new_customer);
+    const ret = await type_cards_model.add(new_type_card);
 
     res.status(200).json(ret);
 })
