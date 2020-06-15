@@ -26,5 +26,8 @@ module.exports = {
     },
     del: id => {
         return Customers.findByIdAndRemove(id);
+    },
+    find_id_by_username: _username => {
+        return Customers.findOne({username: _username}).select('_id');
     }
 }

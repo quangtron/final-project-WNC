@@ -56,4 +56,12 @@ route.post('/delete/:id', async (req, res) => {
     res.status(200).json(ret);
 })
 
+route.get('/id/:username', async (req, res) => {
+    const username = req.params.username;
+    
+    const ret = await customers_model.find_id_by_username(username);
+
+    res.status(200).json(ret);
+})
+
 module.exports = route
