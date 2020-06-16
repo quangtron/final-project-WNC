@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const createError = require('http-errors');
+const create_error = require('http-errors');
 
 const config = require('../config/default.json');
 
@@ -9,13 +9,13 @@ module.exports = function(req, res, next) {
     if(token){
         jwt.verify(token, config.auth.secret, (err, payload) => {
             if(err){
-                throw createError(401, err);
+                throw create_error(401, err);
             }
 
-            req.tokenPayload = payload;
+            req.token_payload = payload;
             next();
         })
     } else {
-        throw createError(401, 'No AccessToken Found!');
+        throw create_error(401, 'No AccessToken Found!');
     }
 }

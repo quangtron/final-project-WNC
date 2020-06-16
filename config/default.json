@@ -9,8 +9,8 @@
     },
     "auth": {
         "secret": "secretKey",
-        "expiresIn": "1m",
-        "refreshTokenSz": 80
+        "expires_in": "1m",
+        "refresh_token_sz": 80
     },
     "interbank": {
         "partnerCode": "B",

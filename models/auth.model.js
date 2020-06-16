@@ -1,19 +1,19 @@
 const bcrypt = require('bcryptjs');
 
-const userModel = require('./users.model');
+const custumer_model = require('./customers.model');
 
 module.exports = {
     login: async entity => {
-        const rows = await userModel.singleByUsername(entity.username);
+        const result = await custumer_model.find_by_username(entity.username);
 
-        if(rows === 0){
+        if(!result){
             return null;
         }
 
-        const hashPwd = rows[0].password;
+        const hashPwd = result.password;
 
         if(bcrypt.compareSync(entity.password, hashPwd)){
-            return rows[0];
+            return result;
         }
 
         return null;

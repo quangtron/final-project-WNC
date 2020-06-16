@@ -1,16 +1,16 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const randToken = require('rand-token');
-const createError = require('http-errors');
+const rand_token = require('rand-token');
+const create_error = require('http-errors');
 
-const authModel = require('../models/auth.model');
-const userModel = require('../models/users.model');
+const auth_model = require('../models/auth.model');
+const customer_model = require('../models/customers.model');
 const config = require('../config/default.json');
 
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-    const ret = await authModel.login(req.body);
+    const ret = await auth_model.login(req.body);
 
     if(ret === null){
         return res.json({
@@ -18,11 +18,11 @@ router.post('/', async (req, res) => {
         })
     }
 
-    const userId = ret.ID;
-    const access_token = generateAccessToken(userId);
-    const refresh_token = randToken.generate(config.auth.refreshTokenSz);
+    const id = ret.id;
+    const access_token = generate_access_token(id);
+    const refresh_token = rand_token.generate(config.auth.refresh_token_sz);
 
-    await userModel.updateRefreshToken(userId, refresh_token);
+    await customer_model.update_refresh_token(id, refresh_token);
 
     return res.json({
         access_token,
@@ -31,30 +31,30 @@ router.post('/', async (req, res) => {
 })
 
 router.post('/refresh', async (req, res) => {
-    jwt.verify(req.body.accessToken, config.auth.secret, { ignoreExpiration: true }, async function(err, payload) {
+    jwt.verify(req.headers['x-access-token'], config.auth.secret, { ignoreExpiration: true }, async function(err, payload) {
         if(err){
-            throw createError(400, 'Something wrong!');
+            throw create_error(400, 'Something wrong!');
         }
 
-        const { userId } = payload;
-        const ret = await userModel.verifyRefreshToken(userId, req.body.refreshToken);
+        const { id } = payload;
+        const ret = await customer_model.verify_refresh_token(id, req.headers['x-refresh-token']);
 
         if(ret === false){
-            throw createError(400, 'Invalid refresh token!');
+            throw create_error(400, 'Invalid refresh token!');
         }
 
-        const accessToken = generateAccessToken(userId);
-        res.json({ accessToken });
+        const access_token = generate_access_token(id);
+        res.json({ access_token });
     })
 })
 
-const generateAccessToken = userId => {
-    const payload = { userId }
-    const accessToken = jwt.sign(payload, config.auth.secret, {
-        expiresIn: config.auth.expiresIn
+const generate_access_token = id => {
+    const payload = { id }
+    const access_token = jwt.sign(payload, config.auth.secret, {
+        expiresIn: config.auth.expires_in
     });
 
-    return accessToken;
+    return access_token;
 }
 
 module.exports = router;
