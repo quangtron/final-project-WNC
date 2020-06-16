@@ -1,18 +1,16 @@
 const Cards = require('../schemas/cards.shema');
-const { find } = require('../schemas/cards.shema');
 
 module.exports = {
     all: _ => {
         return Cards.find();
     },
-    detail: _card_number => {
-        return Cards.find({card_number: _card_number});
+    detail: id => {
+        return Cards.findById(id);
     },
     add: entity => {
         return Cards.create(entity);
     },
-    del: async _card_number => {
-        const id = await Cards.findOne({card_number: _card_number}).select('_id');
+    del: id => {
         return Cards.findByIdAndRemove(id);
     },
     edit: (condition, entity) => {
@@ -20,5 +18,17 @@ module.exports = {
     },
     find_id_by_card_number: _card_number => {
         return Cards.findOne({card_number: _card_number}).select('_id');
+    },
+    is_exist: async _card_number => {
+        var res = false;
+        const cards = await Cards.find({card_number: _card_number});
+
+        if(await cards.length !== 0)
+            res = true;
+
+
+        console.log(res);
+
+        return res;
     }
 }

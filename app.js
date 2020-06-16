@@ -31,6 +31,8 @@ app.use('/customers', require('./routes/customers.route'));
 app.use('/type-cards', require('./routes/type_cards.route'));
 //cards
 app.use('/cards', require('./routes/cards.route'));
+//receivers
+app.use('/receivers', require('./routes/receivers.route'));
 
 app.use((req, res, next) => {
     res.status(404).send('NOT FOUND');
