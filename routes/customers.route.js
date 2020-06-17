@@ -1,6 +1,15 @@
 const express = require('express');
-const mongoose =  require('mongoose');
+const low = require('lowdb');
+const fileSync = require('lowdb/adapters/FileSync');
+
 const customers_model = require('../models/customers.model');
+const cards_model = require('../models/cards.model');
+const config = require('../config/default.json');
+const account = require('../account_default.json');
+
+const adapter = new fileSync('./config/default.json');
+const db = low(adapter);
+
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -23,10 +32,21 @@ router.post('/add', async (req, res) => {
     //        password, day_of_birth, permission} = req.body;
 
     const new_customer = req.body;
-    
     const ret = await customers_model.add(new_customer);
 
-    res.status(200).json(ret);
+    await db.update('account_default.pre_card_number', n => n + 1).write();
+    const card_number_temp = await db.get('account_default.pre_card_number').value();
+
+    const entityCard = {
+        id_customer: ret._id,
+        id_type_card: 1,
+        card_number: card_number_temp,
+        balance: config.account_default.balance_default,
+    }
+
+    const card = await cards_model.add(entityCard);
+
+    res.status(200).json(card);
 })
 
 router.post('/edit/:id', async (req, res) => {

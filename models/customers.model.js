@@ -39,6 +39,9 @@ module.exports = {
     find_by_username: _username => {
         return Customers.findOne({username: _username});
     },
+    find_by_id: id => {
+        return Customers.findOne({id: id});
+    },
     update_refresh_token: async(id, token) => {
         await User_refresh_token.findByIdAndRemove(id);
 

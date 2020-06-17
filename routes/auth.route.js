@@ -31,13 +31,13 @@ router.post('/', async (req, res) => {
 })
 
 router.post('/refresh', async (req, res) => {
-    jwt.verify(req.headers['x-access-token'], config.auth.secret, { ignoreExpiration: true }, async function(err, payload) {
+    jwt.verify(req.headers['x_access_token'], config.auth.secret, { ignoreExpiration: true }, async function(err, payload) {
         if(err){
             throw create_error(400, 'Something wrong!');
         }
 
         const { id } = payload;
-        const ret = await customer_model.verify_refresh_token(id, req.headers['x-refresh-token']);
+        const ret = await customer_model.verify_refresh_token(id, req.headers['x_refresh_token']);
 
         if(ret === false){
             throw create_error(400, 'Invalid refresh token!');
