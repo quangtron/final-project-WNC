@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     res.status(200).json(ret);
 })
 
-router.get('/list-card', async (req, res) => {
+router.get('/customer', async (req, res) => {
     const id = req.token_payload.id;
 
     const ret = await cards_model.find_by_id_customer(id);
