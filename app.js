@@ -17,6 +17,10 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cors());
 
+app.get('/', (req, res) => {
+    res.send('hello');
+})
+
 //customers
 app.use('/auth', require('./routes/auth.route'));
 app.use('/customers', verify_token, require('./routes/customers.route'));
