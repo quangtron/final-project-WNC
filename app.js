@@ -46,7 +46,7 @@ app.use((err, req, res, next) => {
     res.status(errStatus).send('View error log in console.');
 })
 
-const PORT = 3333;
+const PORT = 80;
 app.listen(PORT, _ => {
     console.log(`API is running at PORT: ${PORT}`);
 });
