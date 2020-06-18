@@ -8,7 +8,7 @@ const customers = new mongoose.Schema({
     username: String,
     password: String,
     day_of_birth: String,
-    perrmission: Number
+    permission: Number
 })
 
 module.exports = Customers = mongoose.model('customers', customers);

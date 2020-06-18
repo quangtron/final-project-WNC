@@ -9,38 +9,23 @@ const type_cards_model = require('../models/type_cards.model');
 const adapter = new fileSync('./config/default.json');
 const db = low(adapter);
 
-const route = express.Router();
+const router = express.Router();
 
-route.get('/', async (req, res) => {
+router.get('/', async (req, res) => {
     const ret = await cards_model.all();
 
     res.status(200).json(ret);
 })
 
-route.get('/:id', async (req, res) => {
-    const id = req.params.id;
-    
-    const ret = await cards_model.detail(id);
+router.get('/list-card', async (req, res) => {
+    const id = req.token_payload.id;
+
+    const ret = await cards_model.find_by_id_customer(id);
 
     res.status(200).json(ret);
 })
 
-route.post('/add-saving', async (req, res) => {
-    // if(await cards_model.is_exist(req.body.card_number) === true){
-    //     res.status(404).json('err_string: Number card is existed!!!');
-    // }
-    // else{
-    //     const new_card = { //entity
-    //         id_customer: await customers_model.find_id_by_username(req.body.username), //temp
-    //         id_type_card: await type_cards_model.find_id_by_name_type(req.body.name_type_card),
-    //         card_number: req.body.card_number,
-    //         balance: 100000
-    //     }
-
-    //     const ret = await cards_model.add(new_card);
-
-    //     res.status(200).json(ret);
-    // }
+router.post('/add-saving', async (req, res) => {
     await db.update('account_default.saving_card_number', n => n + 1).write();
     const card_number_temp = await db.get('account_default.saving_card_number').value();
 
@@ -56,7 +41,7 @@ route.post('/add-saving', async (req, res) => {
     res.status(200).json(ret);
 })
 
-route.post('/edit/:id', async (req, res) => {
+router.post('/edit/:id', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === true){
         res.status(404).json('err_string: Number card is existed!!!');
     }
@@ -70,7 +55,7 @@ route.post('/edit/:id', async (req, res) => {
     }
 })
 
-route.post('/delete/:id', async (req, res) => {
+router.post('/delete-card/:id', async (req, res) => {
     const id = req.params.id;
 
     const ret = await cards_model.del(id);
@@ -78,7 +63,7 @@ route.post('/delete/:id', async (req, res) => {
     res.status(200).json(ret);
 })
 
-route.get('/id/:card_number', async (req, res) => {
+router.get('/id/:card_number', async (req, res) => {
     const card_number = req.params.card_number;
     
     const ret = await cards_model.find_id_by_card_number(card_number);
@@ -86,4 +71,4 @@ route.get('/id/:card_number', async (req, res) => {
     res.status(200).json(ret);
 })
 
-module.exports = route;
+module.exports = router;

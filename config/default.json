@@ -13,9 +13,9 @@
     "refresh_token_sz": 80
   },
   "account_default": {
-    "pre_card_number": 5678900000,
+    "pre_card_number": 5678900009,
     "balance_default": 100000,
-    "saving_card_number": 9876500003
+    "saving_card_number": 9876500001
   },
   "interbank": {
     "partnerCode": "B",

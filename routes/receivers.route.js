@@ -1,8 +1,9 @@
 const express = require('express');
-const mongoose = require('mongoose');
+
 const receivers_model = require('../models/receivers.model');
 const customers_model = require('../models/customers.model');
 const cards_model = require('../models/cards.model');
+
 const route = express.Router();
 
 route.get('/', async (req, res) => {
