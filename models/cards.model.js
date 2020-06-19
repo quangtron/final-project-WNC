@@ -25,6 +25,9 @@ module.exports = {
     find_by_id_customer: _id_customer => {
         return Cards.find({id_customer: _id_customer});
     },
+    find_payment_card_by_id_customer: _id_customer => {
+        return Cards.findOne({id_customer: _id_customer, id_type_card: 1});
+    },
     is_exist: async _card_number => {
         var res = false;
         const cards = await Cards.find({card_number: _card_number});

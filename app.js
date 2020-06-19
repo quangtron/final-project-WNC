@@ -36,6 +36,9 @@ app.use('/cards', verify_token, require('./routes/cards.route'));
 //receivers
 app.use('/receivers', verify_token, require('./routes/receivers.route'));
 
+//debtors
+app.use('/debtors', verify_token, require('./routes/debtors.route'));
+
 app.use((req, res, next) => {
     res.status(404).send('NOT FOUND');
 });
