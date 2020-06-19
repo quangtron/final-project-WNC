@@ -18,5 +18,8 @@ module.exports = {
     },
     find_id_by_card_number: _card_number => {
         return Receivers.findOne({card_number: _card_number}).select('_id');
-    }
+    },
+    find_by_id_customer: _id_customer => {
+        return Receivers.find({id_customer: _id_customer});
+    },
 }

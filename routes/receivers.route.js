@@ -13,10 +13,18 @@ route.get('/', async (req, res) => {
     res.status(200).json(ret);
 })
 
-route.get('/:id', async (req, res) => {
-    const id = req.params.id;
+// route.get('/:id', async (req, res) => {
+//     const id = req.params.id;
     
-    const ret = await receivers_model.detail(id);
+//     const ret = await receivers_model.detail(id);
+
+//     res.status(200).json(ret);
+// })
+
+route.get('/customer', async (req, res) => {
+    const id = req.token_payload.id;
+
+    const ret = await receivers_model.find_by_id_customer(id);
 
     res.status(200).json(ret);
 })
@@ -27,9 +35,8 @@ route.post('/add', async (req, res) => {
     }
     else{
         const id_customer = req.token_payload.id;
-        const card_receiver = await cards_model.detail(req.body.card_number);
-        const id_receiver = card_receiver[0].id_customer;
-        const receiver = await customers_model.detail(id_receiver);
+        const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number); 
+        const receiver = await customers_model.detail(card_receiver.id_customer);
 
         var reminiscent_name = req.body.reminiscent_name;
 

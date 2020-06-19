@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const receivers = mongoose.Schema({
+const receivers = new mongoose.Schema({
     id_customer: mongoose.Types.ObjectId,
-    card_number: String,
+    card_number: Number,
     reminiscent_name: String
 })
 
