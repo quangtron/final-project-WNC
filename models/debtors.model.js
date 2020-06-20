@@ -7,7 +7,13 @@ module.exports = {
     all_others_sent_by_card_number: _card_number  => {
         return Debtors.find({card_number: _card_number});
     },
+    detail: id => {
+        return Debtors.findById(id);
+    },
     add: entity => {
         return Debtors.create(entity);
+    },
+    del: id => {
+        return Debtors.findByIdAndRemove(id);
     }
 }
