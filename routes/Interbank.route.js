@@ -1,20 +1,22 @@
 const express = require('express');
-const createError = require('http-errors');
+const create_error = require('http-errors');
 
-const InterbankModel = require('../models/Interbank.model');
+const cards_model = require('../models/cards.model');
+const customers_model = require('../models/customers.model');
 
 const router = express.Router();
 
 router.get('/', async(req, res) => {
-    const rows = await InterbankModel.singleByCardNumber(req.body.cardNumber);
-
-    if(rows.length === 0){
-        throw createError(400, 'Invalid card number!');
+    if(await cards_model.is_exist(req.body.card_number) === false){
+        throw create_error(404, 'Number card is not exist!')
     }
 
+    const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number); 
+    const receiver = await customers_model.detail(card_receiver.id_customer);
+
     res.json({
-        cardNumber: rows[0].cardNumber,
-        name: rows[0].Name,
+        card_number: req.body.card_number,
+        name: receiver.full_name,
     })
 })
 
