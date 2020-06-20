@@ -9,7 +9,7 @@
   },
   "auth": {
     "secret": "secretKey",
-    "expires_in": "10m",
+    "expires_in": "24h",
     "refresh_token_sz": 80
   },
   "account_default": {
