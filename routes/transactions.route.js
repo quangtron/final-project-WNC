@@ -3,6 +3,7 @@ const create_error = require('http-errors');
 const moment = require('moment');
 
 const cards_model = require('../models/cards.model');
+const customers_model = require('../models/customers.model');
 const transactions_model = require('../models/transactions.model');
 const config = require('../config/default.json');
 
@@ -49,6 +50,90 @@ router.post('/customer/sending/add', async (req, res) => {
     });
 
     res.status(200).json(req.body);
+})
+
+router.get('/customer/receiving', async (req, res) => {
+    const id_customer = req.token_payload.id;
+    const card = await cards_model.find_payment_card_by_id_customer(id_customer);
+    const card_number = card.card_number;
+
+    const transactions = await transactions_model.all_receiving_by_card_number(card_number);
+    const ret = [];
+
+    const promises = transactions.map(async item => {
+        const sender = await customers_model.detail(item.id_customer);
+        const card_sender = await cards_model.find_payment_card_by_id_customer(sender._id);
+
+        const entity_ret_item = {
+            _id: item._id,
+            full_name: sender.full_name,
+            card_number: card_sender.card_number,
+            money: item.money,
+            message: item.message,
+            date_created: item.date_created
+        }
+
+        ret.push(entity_ret_item);
+    })
+    
+    await Promise.all(promises);
+
+    res.status(200).json(ret);
+})
+
+router.get('/customer/sending', async (req, res) => {
+    const id_customer = req.token_payload.id;
+
+    const transactions = await transactions_model.all_sending_by_id_customer(id_customer);
+    const ret = [];
+
+    const promises = transactions.map(async item => {
+        const card_receiver = await cards_model.find_detail_by_card_number(item.card_number);
+        const receiver = await customers_model.detail(card_receiver.id_customer);
+        
+        const entity_ret_item = {
+            _id: item._id,
+            full_name: receiver.full_name,
+            card_number: item.card_number,
+            money: item.money,
+            message: item.message,
+            date_created: item.date_created
+        }
+
+        ret.push(entity_ret_item);
+    })
+
+    await Promise.all(promises);
+
+    res.status(200).json(ret);
+})
+
+router.get('/customer/reminding-debt', async (req, res) => {
+    const id_customer = req.token_payload.id;
+
+    const transactions = await transactions_model.all_reminding_debt_by_id_customer(id_customer);
+    const ret = [];
+
+    const promises = transactions.map(async item => {
+        const card_receiver = await cards_model.find_detail_by_card_number(item.card_number);
+        const receiver = await customers_model.detail(card_receiver.id_customer);
+        
+        const entity_ret_item = {
+            _id: item._id,
+            full_name: receiver.full_name,
+            card_number: item.card_number,
+            money: item.money,
+            message: item.message,
+            date_created: item.date_created
+        }
+
+        ret.push(entity_ret_item);
+    })
+
+    await Promise.all(promises);
+
+    res.status(200).json(ret);
+
 })
 
 module.exports = router;
