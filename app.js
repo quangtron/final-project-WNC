@@ -35,6 +35,8 @@ app.use('/type-cards', require('./routes/type_cards.route'));
 app.use('/cards', verify_token, require('./routes/cards.route'));
 //receivers
 app.use('/receivers', verify_token, require('./routes/receivers.route'));
+//transaction
+app.use('/transactions', verify_token, require('./routes/transactions.route'));
 
 //debtors
 app.use('/debtors', verify_token, require('./routes/debtors.route'));

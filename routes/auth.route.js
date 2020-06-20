@@ -43,8 +43,12 @@ router.post('/refresh', async (req, res) => {
             throw create_error(400, 'Invalid refresh token!');
         }
 
+        const refresh_token = rand_token.generate(config.auth.refresh_token_sz);
+
+        await customer_model.update_refresh_token(id, refresh_token);
+
         const access_token = generate_access_token(id);
-        res.json({ access_token });
+        res.json({ access_token, refresh_token });
     })
 })
 

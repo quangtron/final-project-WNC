@@ -16,6 +16,6 @@ module.exports = function(req, res, next) {
             next();
         })
     } else {
-        throw create_error(401, 'No AccessToken Found!');
+        throw create_error(400, 'No AccessToken Found!');
     }
 }
