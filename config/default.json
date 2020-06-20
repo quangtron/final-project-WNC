@@ -15,7 +15,9 @@
   "account_default": {
     "pre_card_number": 5678900009,
     "balance_default": 100000,
-    "saving_card_number": 9876500001
+    "saving_card_number": 9876500001,
+    "card_maintenance_fee": 50000,
+    "transaction_fee": 3000
   },
   "interbank": {
     "partnerCode": "B",

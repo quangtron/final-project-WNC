@@ -48,6 +48,7 @@ router.post('/refresh', async (req, res) => {
         await customer_model.update_refresh_token(id, refresh_token);
 
         const access_token = generate_access_token(id);
+        
         res.json({ access_token, refresh_token });
     })
 })
