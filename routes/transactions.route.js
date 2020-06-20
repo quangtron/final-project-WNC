@@ -19,7 +19,7 @@ router.post('/customer/sending/add', async (req, res) => {
     let total_amount = money + config.account_default.card_maintenance_fee;
 
     if(type_paid === 1){
-        total_amount += config.account_default.type_paid;
+        total_amount += config.account_default.transaction_fee;
     }
 
     if(card_detail_sender.balance < total_amount){
@@ -32,13 +32,11 @@ router.post('/customer/sending/add', async (req, res) => {
     card_detail_receiver.balance += money;
 
     if(type_paid === 2){
-        card_detail_receiver.balance -= config.account_default.type_paid;
+        card_detail_receiver.balance -= config.account_default.transaction_fee;
     }
 
     await card_model.edit({_id: card_detail_sender._id}, card_detail_sender);
     await card_model.edit({_id: card_detail_receiver._id}, card_detail_receiver);
-
-
 
     res.status(200).json(req.body);
 })

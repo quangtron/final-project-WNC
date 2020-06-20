@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
         })
     }
 
-    const id = ret.id;
+    const id = ret._id;
     const access_token = generate_access_token(id);
     const refresh_token = rand_token.generate(config.auth.refresh_token_sz);
 
@@ -48,7 +48,7 @@ router.post('/refresh', async (req, res) => {
         await customer_model.update_refresh_token(id, refresh_token);
 
         const access_token = generate_access_token(id);
-        
+
         res.json({ access_token, refresh_token });
     })
 })

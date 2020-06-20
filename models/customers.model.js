@@ -43,7 +43,9 @@ module.exports = {
         return Customers.findOne({id: id});
     },
     update_refresh_token: async(id, token) => {
-        await User_refresh_token.findByIdAndRemove(id);
+        const id_refresh_token = await User_refresh_token.findOne({id_customer: id}).select('_id');
+
+        await User_refresh_token.findByIdAndRemove(id_refresh_token);
 
         const entity = {
             id_customer: id,
