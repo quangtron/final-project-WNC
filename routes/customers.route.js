@@ -17,8 +17,16 @@ router.get('/', async (req, res) => {
     res.status(200).json(ret);
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/detail/:id', async (req, res) => {
     const id = req.params.id;
+    
+    const ret = await customers_model.detail(id);
+
+    res.status(200).json(ret);
+})
+
+router.get('/detail', async (req, res) => {
+    const id = req.token_payload.id;
     
     const ret = await customers_model.detail(id);
 
