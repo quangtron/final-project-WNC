@@ -4,9 +4,9 @@ const receivers_model = require('../models/receivers.model');
 const customers_model = require('../models/customers.model');
 const cards_model = require('../models/cards.model');
 
-const route = express.Router();
+const router = express.Router();
 
-route.get('/', async (req, res) => {
+router.get('/', async (req, res) => {
     const id_customer = req.token_payload.id;
     const ret = await receivers_model.all(id_customer);
 
@@ -21,7 +21,7 @@ route.get('/', async (req, res) => {
 //     res.status(200).json(ret);
 // })
 
-route.get('/customer', async (req, res) => {
+router.get('/customer', async (req, res) => {
     const id = req.token_payload.id;
 
     const ret = await receivers_model.find_by_id_customer(id);
@@ -29,7 +29,7 @@ route.get('/customer', async (req, res) => {
     res.status(200).json(ret);
 })
 
-route.post('/add', async (req, res) => {
+router.post('/customer/add', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
         res.status(404).json('err_string: Number card is not exist!!!');
     }
@@ -56,13 +56,13 @@ route.post('/add', async (req, res) => {
     }
 })
 
-route.post('/edit/:id', async (req, res) => {
+router.post('/customer/edit/:id', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
         res.status(404).json('err_string: Number card is not exist!!!');
     }
     else{
-        const card_receiver = await cards_model.detail(req.body.card_number);
-        const id_receiver = card_receiver[0].id_customer;
+        const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number);
+        const id_receiver = card_receiver.id_customer;
         const receiver = await customers_model.detail(id_receiver);
 
         var reminiscent_name = req.body.reminiscent_name;
@@ -83,7 +83,7 @@ route.post('/edit/:id', async (req, res) => {
     }
 })
 
-route.post('/delete/:id', async (req, res) => {
+router.post('/customer/delete/:id', async (req, res) => {
     const id = req.params.id;
 
     const ret = await receivers_model.del(id);
@@ -91,7 +91,7 @@ route.post('/delete/:id', async (req, res) => {
     res.status(200).json(ret);
 })
 
-route.get('/id/:card_number', async (req, res) => {
+router.get('/id/:card_number', async (req, res) => {
     const card_number = req.params.card_number;
     
     const ret = await receivers_model.find_id_by_card_number(card_number);
@@ -99,4 +99,4 @@ route.get('/id/:card_number', async (req, res) => {
     res.status(200).json(ret);
 })
 
-module.exports = route;
+module.exports = router;
