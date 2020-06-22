@@ -44,7 +44,7 @@ router.get('/customer/detail', async (req, res) => {
     res.status(200).json(ret);
 })
 
-router.post('/customer/add', async (req, res) => {
+router.post('/customer/saving/add', async (req, res) => {
     await db.update('account_default.saving_card_number', n => n + 1).write();
     const card_number_temp = await db.get('account_default.saving_card_number').value();
 

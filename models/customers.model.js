@@ -64,4 +64,10 @@ module.exports = {
 
         return false;
     },
+    all_customer: _ => {
+        return Customers.find({permission: 2});
+    },
+    all_teller: _ => {
+        return Customers.find({permission: 1});
+    }
 }
