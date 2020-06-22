@@ -1,4 +1,5 @@
 const express = require('express');
+const create_error = require('http-errors');
 const low = require('lowdb');
 const fileSync = require('lowdb/adapters/FileSync');
 
@@ -25,7 +26,25 @@ router.get('/customer', async (req, res) => {
     res.status(200).json(ret);
 })
 
-router.post('/add-saving', async (req, res) => {
+router.get('/customer/detail', async (req, res) => {
+    if(await cards_model.is_exist(req.body.card_number) === false){
+        throw create_error(400, 'Number card is not exist!');
+    }
+
+    const card = await cards_model.find_detail_by_card_number(req.body.card_number);
+    const customer = await customers_model.detail(card.id_customer);
+
+    const ret = {
+        card_number: card.card_number,
+        full_name: customer.full_name,
+        phone_number: customer.phone_number,
+        address: customer.address
+    }
+    
+    res.status(200).json(ret);
+})
+
+router.post('/customer/add', async (req, res) => {
     await db.update('account_default.saving_card_number', n => n + 1).write();
     const card_number_temp = await db.get('account_default.saving_card_number').value();
 
@@ -41,7 +60,7 @@ router.post('/add-saving', async (req, res) => {
     res.status(200).json(ret);
 })
 
-router.post('/edit/:id', async (req, res) => {
+router.post('/customer/edit/:id', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === true){
         res.status(404).json('err_string: Number card is existed!!!');
     }
@@ -55,7 +74,7 @@ router.post('/edit/:id', async (req, res) => {
     }
 })
 
-router.post('/delete-card/:id', async (req, res) => {
+router.post('/customer/delete/:id', async (req, res) => {
     const id = req.params.id;
 
     const ret = await cards_model.del(id);
