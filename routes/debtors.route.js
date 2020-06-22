@@ -142,21 +142,20 @@ router.get('/others-sent/unpaid', async (req, res) => {
 
 router.post('/add', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
-        res.status(404).json({errString: 'Number card is not exist!!!'});
+        res.status(404).json({is_error: true});
+        throw create_error(400, 'Number card is not exist!');
     }
-    else{
-        const entity_new_debtor = {
-            id_customer: req.token_payload.id,
-            is_paid: 1,
-            card_number: req.body.card_number,
-            money: req.body.money,
-            message: req.body.message
-        }
-
-        const ret = await debtors_model.add(entity_new_debtor);
-
-        res.status(200).json(ret);
+    const entity_new_debtor = {
+        id_customer: req.token_payload.id,
+        is_paid: 1,
+        card_number: req.body.card_number,
+        money: req.body.money,
+        message: req.body.message
     }
+
+    const ret = await debtors_model.add(entity_new_debtor);
+
+    res.status(200).json(ret);
 })
 
 router.post('/delete/:id', async (req, res) => {
@@ -205,6 +204,7 @@ router.post('/transaction/reminding-debt/:id', async (req, res) => {
     let total_amount = debtor.money + config.account_default.card_maintenance_fee + config.account_default.transaction_fee;
     
     if(card_sender.balance < total_amount){
+        res.status(400).json({is_error: true});
         throw create_error(400, 'Balance is not enough!');
     }
 

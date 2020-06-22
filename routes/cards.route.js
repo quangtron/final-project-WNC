@@ -28,6 +28,7 @@ router.get('/customer', async (req, res) => {
 
 router.get('/customer/detail', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
+        res.status(400).json({is_error: true});
         throw create_error(400, 'Number card is not exist!');
     }
 
@@ -45,8 +46,13 @@ router.get('/customer/detail', async (req, res) => {
 })
 
 router.post('/customer/saving/add', async (req, res) => {
+    if(isNaN(req.body.money) || req.body.money < 0){
+        res.status(400).json({is_error: true});
+    }
+    
     await db.update('account_default.saving_card_number', n => n + 1).write();
     const card_number_temp = await db.get('account_default.saving_card_number').value();
+
 
     const entity_card = {
         id_customer: req.token_payload.id,
@@ -62,16 +68,16 @@ router.post('/customer/saving/add', async (req, res) => {
 
 router.post('/customer/edit/:id', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === true){
-        res.status(404).json('err_string: Number card is existed!!!');
+        res.status(400).json({is_error: true});
+        throw create_error(400, 'Number card is existed!');
     }
-    else{
-        const condition = {_id: req.params.id};
-        const entity = req.body;
 
-        const ret = await cards_model.edit(condition, entity);
+    const condition = {_id: req.params.id};
+    const entity = req.body;
 
-        res.status(200).json(ret);
-    }
+    const ret = await cards_model.edit(condition, entity);
+
+    res.status(200).json(ret);
 })
 
 router.post('/customer/delete/:id', async (req, res) => {

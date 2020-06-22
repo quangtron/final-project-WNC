@@ -1,4 +1,6 @@
 const express = require('express');
+const create_error = require('http-errors');
+const bcrypt = require('bcryptjs');
 const low = require('lowdb');
 const fileSync = require('lowdb/adapters/FileSync');
 
@@ -21,6 +23,30 @@ router.get('/detail', async (req, res) => {
     const id = req.token_payload.id;
     
     const ret = await customers_model.detail(id);
+
+    res.status(200).json(ret);
+})
+
+router.post('/change-password', async(req, res) => {
+    const id = req.token_payload.id;
+    const ret = await customers_model.detail(id);
+
+    if(!bcrypt.compareSync(req.body.current_password, ret.password)){
+        res.status(400).json({is_error: true});
+        throw create_error(400, 'Password is not match');
+    }
+
+    const new_password = req.body.new_password;
+
+    if(new_password !== req.body.confirm_password){
+        res.status(400).json({is_error: true});
+        throw create_error(400, 'New password and confirm password is not match');
+    }
+
+    const new_password_hash = bcrypt.hashSync(new_password);
+    ret.password = new_password_hash;
+
+    await customers_model.edit({_id: id}, ret);
 
     res.status(200).json(ret);
 })

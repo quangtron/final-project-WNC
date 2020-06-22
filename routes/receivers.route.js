@@ -1,4 +1,5 @@
 const express = require('express');
+const create_error = require('http-errors');
 
 const receivers_model = require('../models/receivers.model');
 const customers_model = require('../models/customers.model');
@@ -31,34 +32,35 @@ router.get('/customer', async (req, res) => {
 
 router.post('/customer/add', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
-        res.status(404).json('err_string: Number card is not exist!!!');
+        res.status(400).json({is_error: true});
+        throw create_error(400, 'Number card is not exist!');
     }
-    else{
-        const id_customer = req.token_payload.id;
-        const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number); 
-        const receiver = await customers_model.detail(card_receiver.id_customer);
 
-        var reminiscent_name = req.body.reminiscent_name;
+    const id_customer = req.token_payload.id;
+    const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number); 
+    const receiver = await customers_model.detail(card_receiver.id_customer);
 
-        if(req.body.reminiscent_name === ''){
-            reminiscent_name = receiver.full_name;
-        }
+    var reminiscent_name = req.body.reminiscent_name;
 
-        const new_receiver = {
-            id_customer: id_customer,
-            card_number: req.body.card_number,
-            reminiscent_name: reminiscent_name
-        }
-
-        const ret = await receivers_model.add(new_receiver);
-
-        res.status(200).json(ret);
+    if(req.body.reminiscent_name === ''){
+        reminiscent_name = receiver.full_name;
     }
+
+    const new_receiver = {
+        id_customer: id_customer,
+        card_number: req.body.card_number,
+        reminiscent_name: reminiscent_name
+    }
+
+    const ret = await receivers_model.add(new_receiver);
+
+    res.status(200).json(ret);
 })
 
 router.post('/customer/edit/:id', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
-        res.status(404).json('err_string: Number card is not exist!!!');
+        res.status(400).json({is_error: true});
+        throw create_error(400, 'Number card is not exist!');
     }
     else{
         const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number);

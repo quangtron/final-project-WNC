@@ -15,6 +15,7 @@ router.post('/customer/sending/add', async (req, res) => {
     const id_customer = req.token_payload.id;
 
     if(await cards_model.is_exist(card_number) === false){
+        res.status(400).json({is_error: true});
         throw create_error(400, 'Number card is not exist!');
     }
 
@@ -27,6 +28,7 @@ router.post('/customer/sending/add', async (req, res) => {
     }
 
     if(card_detail_sender.balance < total_amount){
+        res.status(400).json({is_error: true});
         throw create_error(400, 'Balance is not enough!');
     }
 
@@ -143,6 +145,7 @@ router.post('/teller/sending/add', async (req, res) => {
     // const id_customer = req.token_payload.id;
 
     if(await cards_model.is_exist(card_number) === false){
+        res.status(400).json({is_error: true});
         throw create_error(400, 'Number card is not exist!');
     }
 
