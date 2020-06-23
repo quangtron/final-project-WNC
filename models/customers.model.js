@@ -69,5 +69,18 @@ module.exports = {
     },
     all_teller: _ => {
         return Customers.find({permission: 1});
+    },
+    is_exist: async _username => {
+        let res = false;
+
+        const customer = await Customers.findOne({username: _username});
+
+        if(customer){
+            return true;
+        }
+
+        console.log(res);
+
+        return res;
     }
 }

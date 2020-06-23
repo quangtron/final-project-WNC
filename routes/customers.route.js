@@ -69,6 +69,10 @@ router.post('/teller/add', async (req, res) => {
     // const {full_name, address, email, 
     //        phone_number, username, 
     //        password, day_of_birth} = req.body;
+    if(await customers_model.is_exist(req.body.username)){
+        res.status(400).json({is_error: true});
+        throw create_error(400, 'Username is existed!');
+    }
 
     const new_customer = {...req.body, permission: 2};
     const customer = await customers_model.add(new_customer);
