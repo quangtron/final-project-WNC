@@ -26,7 +26,7 @@ router.get('/customer', async (req, res) => {
     res.status(200).json(ret);
 })
 
-router.get('/customer/detail', async (req, res) => {
+router.post('/customer/detail', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
         res.status(400).json({is_error: true});
         throw create_error(400, 'Number card is not exist!');
