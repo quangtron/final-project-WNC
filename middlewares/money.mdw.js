@@ -32,10 +32,15 @@ module.exports = function(req, res, next) {
     }
 
     //
-
-    if(req.headers['partner-code'] !== config.interbank.partnerCode){
+    const partner_code = req.headers['partner_code'];
+    if(config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === partner_code.toString()).length === 0)
+    {
         throw createError(400, 'Invalid partner code!');
     }
+
+    // if(req.headers['partner-code'] !== config.interbank.partnerCode){
+    //     throw createError(400, 'Invalid partner code!');
+    // }
 
     console.log(moment().unix());
 

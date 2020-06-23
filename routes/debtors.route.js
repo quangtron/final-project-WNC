@@ -218,10 +218,11 @@ router.post('/transaction/reminding-debt/:id', async (req, res) => {
     await debtors_model.edit({_id: id_debtor}, debtor);
 
     const entity_new_transaction = {
-        id_customer: id_customer,
+        // id_customer: id_customer,
+        card_number_sender: card_sender.card_number,
         id_type_transaction: 2,
         id_partner_bank: 1,
-        card_number: card_receiver.card_number,
+        card_number_receiver: card_receiver.card_number,
         message: 'Thanh toán nợ',
         money: debtor.money,
         type_paid: 1,

@@ -17,7 +17,9 @@ module.exports = function(req, res, next) {
         throw createError(400, 'Signature is wrong!');
     }
 
-    if(req.headers['partner-code'] !== config.interbank.partnerCode){
+    const partner_code = req.headers['partner-code'];
+    if(config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === partner_code.toString()).length === 0)
+    {
         throw createError(400, 'Invalid partner code!');
     }
 

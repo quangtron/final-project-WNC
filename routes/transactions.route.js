@@ -11,7 +11,7 @@ const router = express.Router();
 
 //customer
 router.post('/customer/sending/add', async (req, res) => {
-    const { card_number, money, type_paid } = req.body;
+    const { card_number, money, type_paid, message } = req.body;
     const id_customer = req.token_payload.id;
 
     if(await cards_model.is_exist(card_number) === false){
@@ -46,9 +46,11 @@ router.post('/customer/sending/add', async (req, res) => {
 
     await transactions_model.add({
         ...req.body,
-        id_customer,
+        card_number_sender: card_detail_sender.card_number,
+        card_number_receiver: card_detail_receiver.card_number,
         id_type_transaction: 1,
         id_partner_bank: 1,
+        message,
         date_created: moment().format('YYYY-MM-DD HH:mm:ss')
     });
 
@@ -60,23 +62,36 @@ router.get('/customer/receiving', async (req, res) => {
     const card = await cards_model.find_payment_card_by_id_customer(id_customer);
     const card_number = card.card_number;
 
-    const transactions = await transactions_model.all_receiving_by_card_number(card_number);
+    const transactions = await transactions_model.all_receiving_by_card_number_receiver(card_number);
     const ret = [];
 
     const promises = transactions.map(async item => {
-        const sender = await customers_model.detail(item.id_customer);
-        const card_sender = await cards_model.find_payment_card_by_id_customer(sender._id);
+        // const sender = await customers_model.detail(item.id_customer);
+        // const card_sender = await cards_model.find_payment_card_by_id_customer(sender._id);
 
-        const entity_ret_item = {
-            _id: item._id,
-            full_name: sender.full_name,
-            card_number: card_sender.card_number,
-            money: item.money,
-            message: item.message,
-            date_created: item.date_created
+        if(item.id_partner_bank === 1){
+            const card_sender = await cards_model.find_detail_by_card_number(item.card_number_sender);
+            const sender = await customers_model.detail(card_sender.id_customer);
+
+            const entity_ret_item = {
+                _id: item._id,
+                full_name: sender.full_name,
+                card_number: card_sender.card_number,
+                money: item.money,
+                message: item.message,
+                date_created: item.date_created
+            }
+
+            ret.push(entity_ret_item);
+        }else{
+            //temp 
+
+            const entity_ret_item = {
+                message: "cho api lien ngan hang"
+            }
+
+            ret.push(entity_ret_item);
         }
-
-        ret.push(entity_ret_item);
     })
     
     await Promise.all(promises);
@@ -86,24 +101,36 @@ router.get('/customer/receiving', async (req, res) => {
 
 router.get('/customer/sending', async (req, res) => {
     const id_customer = req.token_payload.id;
+    const card = await cards_model.find_payment_card_by_id_customer(id_customer);
+    const card_number = card.card_number;
 
-    const transactions = await transactions_model.all_sending_by_id_customer(id_customer);
+    const transactions = await transactions_model.all_sending_by_card_number_sender(card_number);
     const ret = [];
 
     const promises = transactions.map(async item => {
-        const card_receiver = await cards_model.find_detail_by_card_number(item.card_number);
-        const receiver = await customers_model.detail(card_receiver.id_customer);
-        
-        const entity_ret_item = {
-            _id: item._id,
-            full_name: receiver.full_name,
-            card_number: item.card_number,
-            money: item.money,
-            message: item.message,
-            date_created: item.date_created
-        }
+        if(item.id_partner_bank === 1){
+            const card_receiver = await cards_model.find_detail_by_card_number(item.card_number_receiver);
+            const receiver = await customers_model.detail(card_receiver.id_customer);
+            
+            const entity_ret_item = {
+                _id: item._id,
+                full_name: receiver.full_name,
+                card_number: item.card_number,
+                money: item.money,
+                message: item.message,
+                date_created: item.date_created
+            }
 
-        ret.push(entity_ret_item);
+            ret.push(entity_ret_item);
+        }else{
+            //temp 
+
+            const entity_ret_item = {
+                message: "cho api lien ngan hang"
+            }
+
+            ret.push(entity_ret_item);
+        }
     })
 
     await Promise.all(promises);
@@ -113,8 +140,10 @@ router.get('/customer/sending', async (req, res) => {
 
 router.get('/customer/reminding-debt', async (req, res) => {
     const id_customer = req.token_payload.id;
+    const card = await cards_model.find_payment_card_by_id_customer(id_customer);
+    const card_number = card.card_number;
 
-    const transactions = await transactions_model.all_reminding_debt_by_id_customer(id_customer);
+    const transactions = await transactions_model.all_reminding_debt_by_card_number_sender(card_number);
     const ret = [];
 
     const promises = transactions.map(async item => {
@@ -168,23 +197,36 @@ router.post('/teller/sending/add', async (req, res) => {
 router.get('/teller/receiving', async (req, res) => {
     const {card_number} = req.body;
 
-    const transactions = await transactions_model.all_receiving_by_card_number(card_number);
+    const transactions = await transactions_model.all_receiving_by_card_number_receiver(card_number);
     const ret = [];
 
     const promises = transactions.map(async item => {
-        const sender = await customers_model.detail(item.id_customer);
-        const card_sender = await cards_model.find_payment_card_by_id_customer(sender._id);
+        // const sender = await customers_model.detail(item.id_customer);
+        // const card_sender = await cards_model.find_payment_card_by_id_customer(sender._id);
+        if(item.id_partner_bank === 1){
+            const card_sender = await cards_model.find_detail_by_card_number(item.card_number_sender);
+            const sender = await customers_model.detail(card_sender.id_customer);
+            
+            const entity_ret_item = {
+                _id: item._id,
+                full_name: sender.full_name,
+                card_number: card_sender.card_number,
+                money: item.money,
+                message: item.message,
+                date_created: item.date_created
+            }
 
-        const entity_ret_item = {
-            _id: item._id,
-            full_name: sender.full_name,
-            card_number: card_sender.card_number,
-            money: item.money,
-            message: item.message,
-            date_created: item.date_created
+            ret.push(entity_ret_item);
         }
+        else{
+            //temp 
 
-        ret.push(entity_ret_item);
+            const entity_ret_item = {
+                message: "cho api lien ngan hang"
+            }
+
+            ret.push(entity_ret_item);
+        }
     })
     
     await Promise.all(promises);
@@ -194,25 +236,35 @@ router.get('/teller/receiving', async (req, res) => {
 
 router.get('/teller/sending', async (req, res) => {
     const {card_number} = req.body;
-    const card_customer = await cards_model.find_detail_by_card_number(card_number);
+    // const card_customer = await cards_model.find_detail_by_card_number(card_number);
 
-    const transactions = await transactions_model.all_sending_by_id_customer(card_customer.id_customer);
+    const transactions = await transactions_model.all_sending_by_card_number_sender(card_number);
     const ret = [];
 
     const promises = transactions.map(async item => {
-        const card_receiver = await cards_model.find_detail_by_card_number(item.card_number);
-        const receiver = await customers_model.detail(card_receiver.id_customer);
-        
-        const entity_ret_item = {
-            _id: item._id,
-            full_name: receiver.full_name,
-            card_number: item.card_number,
-            money: item.money,
-            message: item.message,
-            date_created: item.date_created
-        }
+        if(item.id_partner_bank === 1){
+            const card_receiver = await cards_model.find_detail_by_card_number(item.card_number_receiver);
+            const receiver = await customers_model.detail(card_receiver.id_customer);
+            
+            const entity_ret_item = {
+                _id: item._id,
+                full_name: receiver.full_name,
+                card_number: item.card_number,
+                money: item.money,
+                message: item.message,
+                date_created: item.date_created
+            }
 
-        ret.push(entity_ret_item);
+            ret.push(entity_ret_item);
+        }else{
+            //temp 
+
+            const entity_ret_item = {
+                message: "cho api lien ngan hang"
+            }
+
+            ret.push(entity_ret_item);
+        }
     })
 
     await Promise.all(promises);
@@ -222,13 +274,13 @@ router.get('/teller/sending', async (req, res) => {
 
 router.get('/teller/reminding-debt', async (req, res) => {
     const {card_number} = req.body;
-    const card_customer = await cards_model.find_detail_by_card_number(card_number);
-    console.log(card_customer.id_customer);
-    const transactions = await transactions_model.all_reminding_debt_by_id_customer(card_customer.id_customer);
+    // const card_customer = await cards_model.find_detail_by_card_number(card_number);
+    
+    const transactions = await transactions_model.all_reminding_debt_by_card_number_sender(card_number);
     const ret = [];
 
     const promises = transactions.map(async item => {
-        const card_receiver = await cards_model.find_detail_by_card_number(item.card_number);
+        const card_receiver = await cards_model.find_detail_by_card_number(item.card_number.receiver);
         const receiver = await customers_model.detail(card_receiver.id_customer);
         
         const entity_ret_item = {
