@@ -31,7 +31,7 @@
       }
     ],
     "partnerCode": "B",
-    "secretKey": "TruongDepTrai",
+    "secretKey": "secretKey",
     "expiresIn": "10m"
   },
   "RSA": {
