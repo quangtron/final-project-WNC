@@ -1,12 +1,12 @@
 const express = require('express');
 const create_error = require('http-errors');
 const moment = require('moment');
-
+const cryptoJS = require('crypto-js')
 const cards_model = require('../models/cards.model');
 const customers_model = require('../models/customers.model');
 const transactions_model = require('../models/transactions.model');
 const config = require('../config/default.json');
-
+const axios = require('axios');
 const router = express.Router();
 
 //customer
@@ -66,9 +66,6 @@ router.get('/customer/receiving', async (req, res) => {
     const ret = [];
 
     const promises = transactions.map(async item => {
-        // const sender = await customers_model.detail(item.id_customer);
-        // const card_sender = await cards_model.find_payment_card_by_id_customer(sender._id);
-
         if(item.id_partner_bank === 1){
             const card_sender = await cards_model.find_detail_by_card_number(item.card_number_sender);
             const sender = await customers_model.detail(card_sender.id_customer);
@@ -84,13 +81,37 @@ router.get('/customer/receiving', async (req, res) => {
 
             ret.push(entity_ret_item);
         }else{
-            //temp 
+            //Tạo chữ kí để gọi api truy vấn thông tin của ngân hàng khác
+            const card_number_sender = item.card_number_sender;
+            const data = moment().unix() + JSON.stringify({accountID: card_number_sender});
+            var signature = cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
 
-            const entity_ret_item = {
-                message: "cho api lien ngan hang"
-            }
+            await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
+                headers: {
+                    'ts': moment().unix(),
+                    'partner-code': '123',
+                    'sign': signature
+                },
+                data: {
+                    accountID: card_number_sender
+                }
+            }).then(response => {
+                const sender = response.data[0];
+                
+                const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === item.id_partner_bank.toString())
 
-            ret.push(entity_ret_item);
+                const entity_ret_item = {
+                    _id: item._id,
+                    full_name: sender.clientName,
+                    card_number: item.card_number_sender,
+                    bank_name: partner_bank[0].name,
+                    money: item.money,
+                    message: item.message,
+                    date_created: item.date_created
+                }
+    
+                ret.push(entity_ret_item);
+            })
         }
     })
     
@@ -123,13 +144,37 @@ router.get('/customer/sending', async (req, res) => {
 
             ret.push(entity_ret_item);
         }else{
-            //temp 
+            //Tạo chữ kí để gọi api truy vấn thông tin của ngân hàng khác
+            const card_number_sender = item.card_number_sender;
+            const data = moment().unix() + JSON.stringify({accountID: card_number_sender});
+            var signature = cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
 
-            const entity_ret_item = {
-                message: "cho api lien ngan hang"
-            }
+            await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
+                headers: {
+                    'ts': moment().unix(),
+                    'partner-code': '123',
+                    'sign': signature
+                },
+                data: {
+                    accountID: card_number_sender
+                }
+            }).then(response => {
+                const sender = response.data[0];
+                
+                const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === item.id_partner_bank.toString())
 
-            ret.push(entity_ret_item);
+                const entity_ret_item = {
+                    _id: item._id,
+                    full_name: sender.clientName,
+                    card_number: item.card_number_sender,
+                    bank_name: partner_bank[0].name,
+                    money: item.money,
+                    message: item.message,
+                    date_created: item.date_created
+                }
+    
+                ret.push(entity_ret_item);
+            })
         }
     })
 
@@ -201,8 +246,6 @@ router.get('/teller/receiving', async (req, res) => {
     const ret = [];
 
     const promises = transactions.map(async item => {
-        // const sender = await customers_model.detail(item.id_customer);
-        // const card_sender = await cards_model.find_payment_card_by_id_customer(sender._id);
         if(item.id_partner_bank === 1){
             const card_sender = await cards_model.find_detail_by_card_number(item.card_number_sender);
             const sender = await customers_model.detail(card_sender.id_customer);
@@ -211,6 +254,7 @@ router.get('/teller/receiving', async (req, res) => {
                 _id: item._id,
                 full_name: sender.full_name,
                 card_number: card_sender.card_number,
+                bank_name: "Noi Bo",
                 money: item.money,
                 message: item.message,
                 date_created: item.date_created
@@ -219,13 +263,37 @@ router.get('/teller/receiving', async (req, res) => {
             ret.push(entity_ret_item);
         }
         else{
-            //temp 
+            //Tạo chữ kí để gọi api truy vấn thông tin của ngân hàng khác
+            const card_number_sender = item.card_number_sender;
+            const data = moment().unix() + JSON.stringify({accountID: card_number_sender});
+            var signature = cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
 
-            const entity_ret_item = {
-                message: "cho api lien ngan hang"
-            }
+            await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
+                headers: {
+                    'ts': moment().unix(),
+                    'partner-code': '123',
+                    'sign': signature
+                },
+                data: {
+                    accountID: card_number_sender
+                }
+            }).then(response => {
+                const sender = response.data[0];
+                
+                const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === item.id_partner_bank.toString())
 
-            ret.push(entity_ret_item);
+                const entity_ret_item = {
+                    _id: item._id,
+                    full_name: sender.clientName,
+                    card_number: item.card_number_sender,
+                    bank_name: partner_bank[0].name,
+                    money: item.money,
+                    message: item.message,
+                    date_created: item.date_created
+                }
+    
+                ret.push(entity_ret_item);
+            })
         }
     })
     
@@ -257,13 +325,37 @@ router.get('/teller/sending', async (req, res) => {
 
             ret.push(entity_ret_item);
         }else{
-            //temp 
+            //Tạo chữ kí để gọi api truy vấn thông tin của ngân hàng khác
+            const card_number_sender = item.card_number_sender;
+            const data = moment().unix() + JSON.stringify({accountID: card_number_sender});
+            var signature = cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
 
-            const entity_ret_item = {
-                message: "cho api lien ngan hang"
-            }
+            await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
+                headers: {
+                    'ts': moment().unix(),
+                    'partner-code': '123',
+                    'sign': signature
+                },
+                data: {
+                    accountID: card_number_sender
+                }
+            }).then(response => {
+                const sender = response.data[0];
+                
+                const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === item.id_partner_bank.toString())
 
-            ret.push(entity_ret_item);
+                const entity_ret_item = {
+                    _id: item._id,
+                    full_name: sender.clientName,
+                    card_number: item.card_number_sender,
+                    bank_name: partner_bank[0].name,
+                    money: item.money,
+                    message: item.message,
+                    date_created: item.date_created
+                }
+    
+                ret.push(entity_ret_item);
+            })
         }
     })
 

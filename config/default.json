@@ -23,11 +23,11 @@
     "partner_bank": [
       {
         "partner_code": 2,
-        "partner_name": "Ngan Hang A" 
+        "name": "Ngan Hang A" 
       },
       {
         "partner_code": 3,
-        "partner_name": "Ngan Hang B"
+        "name": "Ngan Hang B"
       }
     ],
     "partnerCode": "B",
