@@ -1,5 +1,4 @@
 const express = require('express');
-const create_error = require('http-errors');
 const bcrypt = require('bcryptjs');
 const low = require('lowdb');
 const fileSync = require('lowdb/adapters/FileSync');
@@ -16,7 +15,7 @@ const router = express.Router();
 // router.get('/', async (req, res) => {
 //     const ret = await customers_model.all();
         
-//     res.status(200).json(ret);
+//     return res.status(200).json(ret);
 // })
 
 router.get('/detail', async (req, res) => {
@@ -24,7 +23,7 @@ router.get('/detail', async (req, res) => {
     
     const ret = await customers_model.detail(id);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.post('/change-password', async(req, res) => {
@@ -32,15 +31,13 @@ router.post('/change-password', async(req, res) => {
     const ret = await customers_model.detail(id);
 
     if(!bcrypt.compareSync(req.body.current_password, ret.password)){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Password is not match');
+        return res.status(400).json({is_error: true});
     }
 
     const new_password = req.body.new_password;
 
     if(new_password !== req.body.confirm_password){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'New password and confirm password is not match');
+        return res.status(400).json({is_error: true});
     }
 
     const new_password_hash = bcrypt.hashSync(new_password);
@@ -48,13 +45,13 @@ router.post('/change-password', async(req, res) => {
 
     await customers_model.edit({_id: id}, ret);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/teller', async (req, res) => {
     const ret = await customers_model.all_customer();
         
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/teller/detail/:id', async (req, res) => {
@@ -62,7 +59,7 @@ router.get('/teller/detail/:id', async (req, res) => {
     
     const ret = await customers_model.detail(id);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.post('/teller/add', async (req, res) => {
@@ -70,8 +67,7 @@ router.post('/teller/add', async (req, res) => {
     //        phone_number, username, 
     //        password, day_of_birth} = req.body;
     if(await customers_model.is_exist(req.body.username)){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Username is existed!');
+        return res.status(400).json({is_error: true});
     }
 
     const new_customer = {...req.body, permission: 2};
@@ -90,7 +86,7 @@ router.post('/teller/add', async (req, res) => {
     const card = await cards_model.add(entity_card);
     const result = {customer, card}
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
 })
 
 router.post('/teller/edit/:id', async (req, res) => {
@@ -99,7 +95,7 @@ router.post('/teller/edit/:id', async (req, res) => {
 
     const ret = await customers_model.edit(condition, entity);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.post('/teller/delete/:id', async (req, res) => {
@@ -109,14 +105,14 @@ router.post('/teller/delete/:id', async (req, res) => {
     const ret = await customers_model.del(id);
     // const card = await cards_model.find_by_id_customer(id);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 //admin
 router.get('/admin', async (req, res) => {
     const ret = await customers_model.all_teller();
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/admin/detail/:id', async (req, res) => {
@@ -124,7 +120,7 @@ router.get('/admin/detail/:id', async (req, res) => {
     
     const ret = await customers_model.detail(id);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.post('/admin/add', async (req, res) => {
@@ -147,7 +143,7 @@ router.post('/admin/add', async (req, res) => {
 
     const ret = await customers_model.add(new_teller);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.post('/admin/edit/:id', async (req, res) => {
@@ -156,7 +152,7 @@ router.post('/admin/edit/:id', async (req, res) => {
 
     const ret = await customers_model.edit(condition, entity);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.post('/admin/delete/:id', async (req, res) => {
@@ -164,7 +160,7 @@ router.post('/admin/delete/:id', async (req, res) => {
 
     const ret = await customers_model.del(id);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 module.exports = router

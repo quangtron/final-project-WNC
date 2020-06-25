@@ -1,5 +1,4 @@
 const express = require('express');
-const create_error = require('http-errors');
 const moment = require('moment');
 const low = require('lowdb');
 const fileSync = require('lowdb/adapters/FileSync');
@@ -45,7 +44,7 @@ router.get('/my-created', async (req, res) => {
 
     await Promise.all(promises);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/others-sent', async (req, res) => {
@@ -81,7 +80,7 @@ router.get('/others-sent', async (req, res) => {
 
     await Promise.all(promises);
     
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/my-created/unpaid', async (req, res) => {
@@ -106,7 +105,7 @@ router.get('/my-created/unpaid', async (req, res) => {
 
     await Promise.all(promises);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 
 })
 
@@ -136,14 +135,13 @@ router.get('/others-sent/unpaid', async (req, res) => {
 
     await Promise.all(promises);
     
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 
 })
 
 router.post('/add', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
-        res.status(404).json({is_error: true});
-        throw create_error(400, 'Number card is not exist!');
+        return res.status(404).json({is_error: true});
     }
     const entity_new_debtor = {
         id_customer: req.token_payload.id,
@@ -155,7 +153,7 @@ router.post('/add', async (req, res) => {
 
     const ret = await debtors_model.add(entity_new_debtor);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.post('/delete/:id', async (req, res) => {
@@ -188,7 +186,7 @@ router.post('/delete/:id', async (req, res) => {
 
     const ret = await debtors_model.del(id_debtor);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.post('/transaction/reminding-debt/:id', async (req, res) => {
@@ -204,8 +202,7 @@ router.post('/transaction/reminding-debt/:id', async (req, res) => {
     let total_amount = debtor.money + config.account_default.card_maintenance_fee + config.account_default.transaction_fee;
     
     if(card_sender.balance < total_amount){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Balance is not enough!');
+        return res.status(400).json({is_error: true});
     }
 
     card_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
@@ -231,7 +228,7 @@ router.post('/transaction/reminding-debt/:id', async (req, res) => {
 
     const ret = await transactions_model.add(entity_new_transaction);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
  module.exports = router;

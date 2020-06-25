@@ -14,7 +14,7 @@ router.get('/', async(req, res) => {
     const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number); 
     const receiver = await customers_model.detail(card_receiver.id_customer);
 
-    res.json({
+    return res.json({
         card_number: req.body.card_number,
         name: receiver.full_name,
     })

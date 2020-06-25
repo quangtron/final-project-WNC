@@ -1,12 +1,13 @@
 const express = require('express');
-const create_error = require('http-errors');
 const moment = require('moment');
 const cryptoJS = require('crypto-js')
+const axios = require('axios');
+
 const cards_model = require('../models/cards.model');
 const customers_model = require('../models/customers.model');
 const transactions_model = require('../models/transactions.model');
 const config = require('../config/default.json');
-const axios = require('axios');
+
 const router = express.Router();
 
 //customer
@@ -15,8 +16,7 @@ router.post('/customer/sending/add', async (req, res) => {
     const id_customer = req.token_payload.id;
 
     if(await cards_model.is_exist(card_number) === false){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Number card is not exist!');
+        return res.status(204).json({is_error: true});
     }
 
     const card_detail_sender = await cards_model.find_payment_card_by_id_customer(id_customer);
@@ -28,8 +28,7 @@ router.post('/customer/sending/add', async (req, res) => {
     }
 
     if(card_detail_sender.balance < total_amount){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Balance is not enough!');
+        return res.status(400).json({is_error: true});
     }
 
     card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
@@ -62,8 +61,7 @@ router.post('/customer/sending/add/temp', async (req, res) => {
     const id_customer = req.token_payload.id;
 
     if(await cards_model.is_exist(card_number) === false){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Number card is not exist!');
+        return res.status(204).json({is_error: true});
     }
 
     const card_detail_sender = await cards_model.find_payment_card_by_id_customer(id_customer);
@@ -75,8 +73,7 @@ router.post('/customer/sending/add/temp', async (req, res) => {
     }
 
     if(card_detail_sender.balance < total_amount){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Balance is not enough!');
+        return res.status(400).json({is_error: true});
     }
 
     card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
@@ -101,7 +98,7 @@ router.post('/customer/sending/add/temp', async (req, res) => {
         date_created: moment().format('YYYY-MM-DD HH:mm:ss')
     });
 
-    res.status(200).json(req.body);
+    return res.status(200).json(req.body);
 })
 
 router.get('/customer/receiving', async (req, res) => {
@@ -165,7 +162,7 @@ router.get('/customer/receiving', async (req, res) => {
     
     await Promise.all(promises);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/customer/sending', async (req, res) => {
@@ -229,7 +226,7 @@ router.get('/customer/sending', async (req, res) => {
 
     await Promise.all(promises);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/customer/reminding-debt', async (req, res) => {
@@ -258,8 +255,7 @@ router.get('/customer/reminding-debt', async (req, res) => {
 
     await Promise.all(promises);
 
-    res.status(200).json(ret);
-
+    return res.status(200).json(ret);
 })
 
 //Teller
@@ -268,8 +264,7 @@ router.post('/teller/sending/add', async (req, res) => {
     // const id_customer = req.token_payload.id;
 
     if(await cards_model.is_exist(card_number) === false){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Number card is not exist!');
+        return res.status(204).json({is_error: true});
     }
 
     const card_receiver = await cards_model.find_detail_by_card_number(card_number);
@@ -285,7 +280,7 @@ router.post('/teller/sending/add', async (req, res) => {
     //     date_created: moment().format('YYYY-MM-DD HH:mm:ss')
     // });
 
-    res.status(200).json(req.body);
+    return res.status(200).json(req.body);
 })
 
 router.get('/teller/receiving', async (req, res) => {
@@ -348,7 +343,7 @@ router.get('/teller/receiving', async (req, res) => {
     
     await Promise.all(promises);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/teller/sending', async (req, res) => {
@@ -411,7 +406,7 @@ router.get('/teller/sending', async (req, res) => {
 
     await Promise.all(promises);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 })
 
 router.get('/teller/reminding-debt', async (req, res) => {
@@ -439,7 +434,7 @@ router.get('/teller/reminding-debt', async (req, res) => {
 
     await Promise.all(promises);
 
-    res.status(200).json(ret);
+    return res.status(200).json(ret);
 
 })
 
