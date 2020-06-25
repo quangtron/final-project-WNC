@@ -2,6 +2,10 @@ const express = require('express');
 const create_error = require('http-errors');
 const low = require('lowdb');
 const fileSync = require('lowdb/adapters/FileSync');
+const axios = require('axios');
+const moment = require('moment');
+const cryptoJS = require('crypto-js');
+const config = require('../config/default.json');
 
 const cards_model = require('../models/cards.model');
 const customers_model = require('../models/customers.model');
@@ -28,21 +32,60 @@ router.get('/customer', async (req, res) => {
 
 router.post('/customer/detail', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
-        res.status(400).json({is_error: true});
-        throw create_error(400, 'Number card is not exist!');
-    }
+        // res.status(400).json({is_error: true});
+        // throw create_error(400, 'Number card is not exist!');
 
-    const card = await cards_model.find_detail_by_card_number(req.body.card_number);
-    const customer = await customers_model.detail(card.id_customer);
+        //Tạo chữ kí để gọi api truy vấn thông tin của ngân hàng khác
+        const card_number = req.body.card_number;
+        const data = moment().unix() + JSON.stringify({accountID: card_number});
+        var signature = cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
 
-    const ret = {
-        card_number: card.card_number,
-        full_name: customer.full_name,
-        phone_number: customer.phone_number,
-        address: customer.address
+        await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
+            headers: {
+                'ts': moment().unix(),
+                'partner-code': '123',
+                'sign': signature
+            },
+            data: {
+                accountID: card_number
+            }
+        }).then(response => {
+            if(response.data.length === 0){
+                res.status(400).json({is_error: true});
+                throw create_error(400, 'Number card is not exist!');
+            }
+            else{
+                const id_partner_code = req.body.id_partner_code;
+                const customer = response.data[0];
+                const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === id_partner_code.toString());
+
+                const ret = {
+                    full_name: customer.clientName,
+                    phone_number: customer.phone,
+                    email: customer.clientEmail,
+                    card_number,
+                    bank_name: partner_bank[0].name
+                }
+
+                res.status(200).json(ret);
+            }
+        }).catch(error => {
+            console.log(error)
+        })
+    }else{
+        const card = await cards_model.find_detail_by_card_number(req.body.card_number);
+        const customer = await customers_model.detail(card.id_customer);
+
+        const ret = {
+            card_number: card.card_number,
+            full_name: customer.full_name,
+            phone_number: customer.phone_number,
+            bank_name: 'Noi Bo',
+            email: customer.email
+        }
+        
+        res.status(200).json(ret);
     }
-    
-    res.status(200).json(ret);
 })
 
 router.post('/customer/saving/add', async (req, res) => {
