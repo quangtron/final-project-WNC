@@ -19,6 +19,10 @@
     "card_maintenance_fee": 50000,
     "transaction_fee": 3000
   },
+  "email_otp": {
+    "user": "webnangcao17@gmail.com",
+    "pass": "wnc123456"
+  },
   "interbank": {
     "partner_bank": [
       {

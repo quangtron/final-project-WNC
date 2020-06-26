@@ -39,6 +39,9 @@ module.exports = {
     find_by_username: _username => {
         return Customers.findOne({username: _username});
     },
+    find_by_email: _email => {
+        return Customers.findOne({email: _email});
+    },
     find_by_id: id => {
         return Customers.findOne({id: id});
     },

@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
 })
 
 //customers
+app.use('/forget-password', require('./routes/reset_password.route'));
 app.use('/auth', require('./routes/auth.route'));
 app.use('/customers', verify_token, require('./routes/customers.route'));
 
