@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs');
 const rand_token = require('rand-token');
 
 const customers_model = require('../models/customers.model');
-const reset_password_model = require('../models/otp_email.model');
 const mail = require('../middlewares/verify_email.mdw');
 const config = require('../config/default.json');
 const otp_email_model = require('../models/otp_email.model');
@@ -43,15 +42,16 @@ router.post('/verify/:token', async (req, res) => {
 
     const hash_password = bcrypt.hashSync(req.body.new_password);
 
-    const reset_pw_detail = await reset_password_model.find_by_token(req.params.token);
+    const reset_pw_detail = await otp_email_model.find_by_token(req.params.token);
 
     if(!reset_pw_detail){
         return res.status(204).json({is_error: true});
     }
 
-    if(Date.now() > reset_pw_detail.reset_password_exprires){
+    if(Date.now() > reset_pw_detail.otp_email_exprires){
         return res.status(204).json({is_error: true});
     }
+
 
     const customer_detail = await customers_model.find_by_email(reset_pw_detail.email);
 

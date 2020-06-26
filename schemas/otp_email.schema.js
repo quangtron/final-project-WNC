@@ -6,4 +6,4 @@ const otp_email = new mongoose.Schema({
     otp_email_exprires: Number
 })
 
-module.exports = Otp_email = mongoose.model('otp_email', otp_email);
+module.exports = Otp_email = mongoose.model('otp_emails', otp_email);

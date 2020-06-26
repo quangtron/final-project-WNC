@@ -8,7 +8,7 @@ module.exports = {
         return Otp_email.update(condition, entity);
     },
     find_by_token: _token => {
-        return Otp_email.findOne({reset_password_token: _token});
+        return Otp_email.findOne({otp_email_token: _token});
     },
     update_otp_token: async (_token, _email) => {
         const id_otp_email = await Otp_email.findOne({email: _email}).select('_id');
@@ -16,8 +16,9 @@ module.exports = {
         await Otp_email.findByIdAndRemove(id_otp_email);
 
         const entity = {
-            reset_password_token: token,
-            reset_password_exprires: Date.now() + 30000
+            email: _email,
+            otp_email_token: _token,
+            otp_email_exprires: Date.now() + 30000
         }
 
         return await Otp_email.create(entity);
