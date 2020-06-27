@@ -40,7 +40,7 @@ router.post('/customer/detail', async (req, res) => {
         await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
             headers: {
                 'ts': moment().unix(),
-                'partner-code': '123',
+                'partner-code': '2',
                 'sign': signature
             },
             data: {
