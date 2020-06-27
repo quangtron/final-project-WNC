@@ -23,6 +23,10 @@
     "user": "webnangcao17@gmail.com",
     "pass": "wnc123456"
   },
+  "captcha": {
+    "site_key": "6Lf7GaoZAAAAAApDKSIDX0havxve-88WcwiitUET",
+    "secret_key": "6Lf7GaoZAAAAAIY5mQOke8aaf9IgKbwDYG1dM2HP"
+  },
   "interbank": {
     "partner_bank": [
       {

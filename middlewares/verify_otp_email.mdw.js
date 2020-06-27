@@ -1,8 +1,5 @@
-const express = require('express');
-
 const mail = require('../middlewares/verify_email.mdw');
 const otp_email_model = require('../models/otp_email.model');
-const { token } = require('morgan');
 
 module.exports = {
     send_otp: async (email, full_name) => {
