@@ -29,6 +29,7 @@ router.post('/customer/sending/add', async (req, res) => {
         }
 
         if(card_detail_sender.balance < total_amount){
+            console.log('khong du tien');
             return res.status(400).json({is_error: true});
         }
 
@@ -64,6 +65,7 @@ router.post('/customer/sending/add', async (req, res) => {
         }
 
         if(card_detail_sender.balance < total_amount){
+            console.log('khong du tien');
             return res.status(400).json({is_error: true});
         }
 
@@ -236,7 +238,7 @@ router.get('/customer/receiving', async (req, res) => {
             await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
                 headers: {
                     'ts': moment().unix(),
-                    'partner-code': item.id_partner_bank,
+                    'partner-code': item.id_partner_bank.toString(),
                     'sign': signature
                 },
                 data: {
@@ -283,7 +285,7 @@ router.get('/customer/sending', async (req, res) => {
             const entity_ret_item = {
                 _id: item._id,
                 full_name: receiver.full_name,
-                card_number: item.card_number,
+                card_number: item.card_number_receiver,
                 bank_name: 'Noi Bo',
                 money: item.money,
                 message: item.message,
@@ -314,7 +316,7 @@ router.get('/customer/sending', async (req, res) => {
                 const entity_ret_item = {
                     _id: item._id,
                     full_name: receiver.clientName,
-                    card_number: item.card_number_sender,
+                    card_number: item.card_number_receiver,
                     bank_name: partner_bank[0].name,
                     money: item.money,
                     message: item.message,
@@ -346,7 +348,8 @@ router.get('/customer/reminding-debt', async (req, res) => {
         const entity_ret_item = {
             _id: item._id,
             full_name: receiver.full_name,
-            card_number: item.card_number,
+            card_number: item.card_number_receiver,
+            bank_name: 'Noi Bo',
             money: item.money,
             message: item.message,
             date_created: item.date_created
@@ -463,7 +466,7 @@ router.get('/teller/sending', async (req, res) => {
             const entity_ret_item = {
                 _id: item._id,
                 full_name: receiver.full_name,
-                card_number: item.card_number,
+                card_number: item.card_number_receiver,
                 bank_name: 'Noi Bo',
                 money: item.money,
                 message: item.message,
@@ -494,7 +497,7 @@ router.get('/teller/sending', async (req, res) => {
                 const entity_ret_item = {
                     _id: item._id,
                     full_name: receiver.clientName,
-                    card_number: item.card_number_sender,
+                    card_number: item.card_number_receiver,
                     bank_name: partner_bank[0].name,
                     money: item.money,
                     message: item.message,
@@ -525,7 +528,8 @@ router.get('/teller/reminding-debt', async (req, res) => {
         const entity_ret_item = {
             _id: item._id,
             full_name: receiver.full_name,
-            card_number: item.card_number,
+            card_number: item.card_number_receiver,
+            bank_name: 'Noi Bo',
             money: item.money,
             message: item.message,
             date_created: item.date_created
