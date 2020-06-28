@@ -18,5 +18,13 @@ module.exports = {
     },
     all_reminding_debt_by_card_number_sender: _card_number_sender => {
         return Transactions.find({card_number_sender: _card_number_sender, id_type_transaction: 2});
+    },
+    all_transactions_interbank: _ => {
+        return Transactions.find({id_partner_bank: {$in: [
+            2, 3
+        ]}});
+    },
+    all_transactions_interbank_by_partner_code: _partner_code => {
+        return Transactions.find({id_partner_bank: _partner_code});
     }
 }
