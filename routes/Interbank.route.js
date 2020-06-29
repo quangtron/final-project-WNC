@@ -20,4 +20,20 @@ router.get('/', async(req, res) => {
     })
 })
 
+
+//temp
+router.get('/temp/:card_number', async(req, res) => {
+    if(await cards_model.is_exist(req.params.card_number) === false){
+        throw create_error(404, 'Number card is not exist!')
+    }
+
+    const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number); 
+    const receiver = await customers_model.detail(card_receiver.id_customer);
+
+    return res.json({
+        card_number: req.body.card_number,
+        name: receiver.full_name,
+    })
+})
+
 module.exports = router;
