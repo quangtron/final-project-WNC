@@ -6,8 +6,7 @@ const cryptoJS = require('crypto-js')
 const config = require('../config/default.json');
 
 module.exports = function(req, res, next) {
-    console.log('params', req.params);
-    console.log('body', req.body);
+    console.log('body ne Tri =)) ', req.body);
     const headerTs = req.headers['ts'];
 
     var data = headerTs + JSON.stringify(req.body);
