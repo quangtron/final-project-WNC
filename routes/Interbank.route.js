@@ -16,7 +16,9 @@ router.post('/', async(req, res) => {
 
     return res.json({
         card_number: req.body.card_number,
-        name: receiver.full_name,
+        full_name: receiver.full_name,
+        email: receiver.email,
+        phone_number: receiver.phone_number
     })
 })
 

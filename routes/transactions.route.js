@@ -85,7 +85,7 @@ router.post('/customer/sending/add', async (req, res) => {
             accountID: card_number, newBalance: money
         }
 
-        await axios.post('https://wnc-api-banking.herokuapp.com/api/PGP/users',
+        await axios.post('https://wnc-api-banking.herokuapp.com/RSATransfer',
             body, 
             {
                 headers: {

@@ -13,7 +13,7 @@ module.exports = {
 
             let ret;
 
-            await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
+            await axios.get('https://wnc-api-banking.herokuapp.com/RSABank/users', {
                 headers: {
                     'ts': moment().unix(),
                     'partner-code': _partner_code,
