@@ -1,5 +1,6 @@
 const express = require('express');
 const moment = require('moment');
+const crypto = require('crypto');
 const cryptoJS = require('crypto-js');
 const openpgp = require('openpgp');
 const axios = require('axios');
@@ -30,7 +31,7 @@ router.post('/customer/sending/add', async (req, res) => {
         }
 
         if(card_detail_sender.balance < total_amount){
-            console.log('khong du tien');
+            console.log('Balance is not enough!');
             return res.status(400).json({is_error: true});
         }
 
@@ -58,7 +59,84 @@ router.post('/customer/sending/add', async (req, res) => {
 
         res.status(200).json(req.body);
     }
-    else{
+    // else if(partner_code === 2){
+    //     let total_amount = money + config.account_default.card_maintenance_fee;
+
+    //     if(type_paid === 1){
+    //         total_amount += config.account_default.transaction_fee;
+    //     }
+
+    //     if(card_detail_sender.balance < total_amount){
+    //         console.log('khong du tien');
+    //         return res.status(400).json({is_error: true});
+    //     }
+
+    //     //Tạo chữ kí 
+    //     const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === partner_code.toString());    
+    //     const privateKeyArmored = partner_bank[0].my_private_key;
+    //     const passphrase = `nhom17`; // what the private key is encrypted with
+
+    //     const headerTs = moment().unix();
+    //     // var data = headerTs + JSON.stringify({accountID: card_number, newBalance: money});
+
+    //     const body = {
+    //         accountID: card_number.toString(), newBalance: money.toString()
+    //     }
+
+    //     //Create Sign to Compare
+    //     const { keys: [privateKey] } = await openpgp.key.readArmored(privateKeyArmored);
+        
+    //     await privateKey.decrypt(passphrase);
+
+    //     const { data: cleartext } = await openpgp.sign({
+    //         message: openpgp.cleartext.fromText(JSON.stringify(body)), // CleartextMessage or Message object
+    //         privateKeys: [privateKey]                         // for signing
+    //     });
+
+    //     // console.log('data', cleartext);
+    //     var data = headerTs + JSON.stringify(body);
+    //     const sign = await cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
+        
+    //     console.log(headerTs, sign);
+    //     // console.log(sign);
+    //     // console.log(headerTs);
+
+    //     await axios.post('https://wnc-api-banking.herokuapp.com/api/RSATransfer',
+    //         body, 
+    //         {
+    //             headers: {
+    //                 'ts': headerTs,
+    //                 'partner-code': partner_code,
+    //                 'sign': sign
+    //             }
+    //         }
+    //     ).then(async response => {
+    //         if(response.data.status === 'OK'){ // thanh cong
+    //             card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
+        
+    //             await cards_model.edit({_id: card_detail_sender._id}, card_detail_sender);
+        
+    //             await transactions_model.add({
+    //                 ...req.body,
+    //                 card_number_sender: card_detail_sender.card_number,
+    //                 card_number_receiver: card_number,
+    //                 id_type_transaction: 1,
+    //                 id_partner_bank: partner_code,
+    //                 message,
+    //                 date_created: moment().format('YYYY-MM-DD HH:mm:ss')
+    //             });
+        
+    //             res.status(200).json(req.body);        
+    //         }
+    //         else{
+    //             return res.status(400).json({is_error: true});
+    //         }
+    //     }).catch(error => {
+    //         // console.log('err12312312', error)
+    //         return res.status(400).json({is_error: true});
+    //     })
+    // }
+    else{ // partner_code === 3 
         let total_amount = money + config.account_default.card_maintenance_fee;
 
         if(type_paid === 1){
@@ -66,145 +144,98 @@ router.post('/customer/sending/add', async (req, res) => {
         }
 
         if(card_detail_sender.balance < total_amount){
-            console.log('khong du tien');
+            console.log('Balance is not enough!');
+            return res.status(400).json({is_error: true});
+        }
+
+        const headerTs = moment().unix();
+
+        const transfer = await interbanks_model.transfer(headerTs, card_number, partner_code, money);
+
+        if(transfer === true){ // thanh cong
+            card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
+        
+            await cards_model.edit({_id: card_detail_sender._id}, card_detail_sender);
+
+            await transactions_model.add({
+                ...req.body,
+                card_number_sender: card_detail_sender.card_number,
+                card_number_receiver: card_number,
+                id_type_transaction: 1,
+                id_partner_bank: partner_code,
+                message,
+                date_created: moment().format('YYYY-MM-DD HH:mm:ss')
+            });
+
+            res.status(200).json(req.body);        
+
+        }
+        else{
             return res.status(400).json({is_error: true});
         }
 
         //Tạo chữ kí 
-        const privateKeyArmored = config.PGP.privateKey;
-
-        const headerTs = moment().unix();
-        var data = headerTs + JSON.stringify({accountID: card_number, newBalance: money});
-
-        //Create Sign to Compare
-        const sign = await cryptoJS.HmacSHA256(data, privateKeyArmored).toString();
-        // console.log(sign);
-        // console.log(headerTs);
-
-        const body = {
-            accountID: card_number, newBalance: money
-        }
-
-        await axios.post('https://wnc-api-banking.herokuapp.com/api/RSATransfer',
-            body, 
-            {
-                headers: {
-                    'ts': headerTs,
-                    'partner-code': partner_code,
-                    'sign': sign
-                }
-            }
-        ).then(async response => {
-            if(response.data.status === 'OK'){ // thanh cong
-                card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
+        // const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === partner_code.toString());    
+        // const my_private_key = partner_bank[0].my_private_key;
         
-                await cards_model.edit({_id: card_detail_sender._id}, card_detail_sender);
-        
-                await transactions_model.add({
-                    ...req.body,
-                    card_number_sender: card_detail_sender.card_number,
-                    card_number_receiver: card_number,
-                    id_type_transaction: 1,
-                    id_partner_bank: partner_code,
-                    message,
-                    date_created: moment().format('YYYY-MM-DD HH:mm:ss')
-                });
-        
-                res.status(200).json(req.body);        
-            }
-            else{
-                return res.status(400).json({is_error: true});
-            }
-        }).catch(error => {
-            // console.log('err12312312', error)
-            return res.status(400).json({is_error: true});
-        })
+        // const body = {
+        //     card_number: card_number, money: money
+        // }
 
+        // const headerTs = moment().unix();
+        
+        // var data = headerTs + JSON.stringify(body);
+
+        // const sign = crypto.createSign('SHA256');
+
+        // sign.write(data); // đưa data cần kí vào đây
+        // const signature = sign.sign(my_private_key, 'hex'); // tạo chữ kí bằng private key
+        
+        // await axios.post('https://api-internet-banking-17.herokuapp.com/api/interbank/rsa-transfer',
+        //     body, 
+        //     {
+        //         headers: {
+        //             'ts': headerTs,
+        //             'partner-code': partner_code,
+        //             'sign': signature
+        //         }
+        //     }
+        // ).then(async response => {
+        //     // Verify
+        //     const your_public_key = partner_bank[0].your_public_key;
+        //     const verify = crypto.createVerify('SHA256');
+        //     verify.write(response.data.msg);
+        //     verify.end();
+            
+        //     if(!verify.verify(your_public_key, response.data.sign, 'hex')){ // truyen public key, chu ky vào để verify
+        //         res.status(503).json({msg: 'SIGNATURE IS WRONG!'});
+        //     }
+
+        //     // if(response.data.msg === 'SUCCESSED!'){ // thanh cong
+        //         card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
+        
+        //         await cards_model.edit({_id: card_detail_sender._id}, card_detail_sender);
+        
+        //         await transactions_model.add({
+        //             ...req.body,
+        //             card_number_sender: card_detail_sender.card_number,
+        //             card_number_receiver: card_number,
+        //             id_type_transaction: 1,
+        //             id_partner_bank: partner_code,
+        //             message,
+        //             date_created: moment().format('YYYY-MM-DD HH:mm:ss')
+        //         });
+        
+        //         res.status(200).json(req.body);        
+        //     // }
+        //     // else{
+        //     //     return res.status(400).json({is_error: true});
+        //     // }
+        // }).catch(error => {
+        //     return res.status(400).json({is_error: true});
+        // })
     }
 })
-
-// router.post('/customer/sending/add/temp', async (req, res) => {
-//     if(await cards_model.is_exist(req.body.card_number) === false){
-//         // return res.status(400).json({is_error: true});
-
-//         //Tạo chữ kí 
-//         const privateKeyArmored = config.PGP.privateKey;
-//         // console.log(privateKeyArmored);
-//         const passphrase = `thanhtri`; // what the private key is encrypted with
-        
-//         // const card_number = req.body.card_number;
-//         // const ts = moment().unix();
-//         // const data = ts + JSON.stringify(req.body);
-
-//         // const { keys: [privateKey] } = await openpgp.key.readArmored(privateKeyArmored);
-//         // await privateKey.decrypt(passphrase);
-     
-//         // const { signature: detachedSignature } = await openpgp.sign({
-//         //     message: openpgp.cleartext.fromText(data), // CleartextMessage or Message object
-//         //     privateKeys: [privateKey],                            // for signing
-//         //     detached: true
-//         // });
-//         // console.log(detachedSignature);
-//         // console.log(ts);
-//         const card_number = req.body.card_number.toString();
-//         const money = req.body.money.toString()
-//         const id_partner_code =  req.body.id_partner_code;
-//         // const data = moment().unix() + JSON.stringify({accountID: card_number});
-//         // var signature = cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
-
-//         // const sign = await cryptoJS.SHA256(data, privateKeyArmored).toString();
-//         // console.log(sign);
-
-//         // console.log({accountID: card_number, newBalance: money});
-
-//         const headerTs = moment().unix();
-        
-//         var data = headerTs + JSON.stringify({accountID: card_number, newBalance: money});
-
-//         //Create Sign to Compare
-//         const sign = await cryptoJS.HmacSHA256(data, privateKeyArmored).toString();
-//         // console.log(sign);
-//         // console.log(headerTs);
-
-//         const body = {
-//             accountID: card_number, newBalance: money
-//         }
-
-//         await axios.post('https://wnc-api-banking.herokuapp.com/api/PGP/users',
-//             body, 
-//             {
-//                 headers: {
-//                     'ts': headerTs,
-//                     'partner-code': '2',
-//                     'sign': sign
-//                 }
-//             }
-//         ).then(response => {
-//             if(response.data.status === 'OK'){ // thanh cong
-                
-//                 const new_transaction = {
-//                     ...req.body,
-//                     card_number_sender: card_detail_sender.card_number,
-//                     card_number_receiver: card_detail_receiver.card_number,
-//                     id_type_transaction: 1, // chuyen tien
-//                     id_partner_bank: id_partner_code,
-//                     date_created: moment().format('YYYY-MM-DD HH:mm:ss')
-//                 };
-
-//                 return res.status(200).json(response.data);
-//             }
-//             else{
-//                 return res.status(400).json({is_error: true});
-//             }
-//         }).catch(error => {
-//             // console.log('err12312312', error)
-//             return res.status(400).json({is_error: true});
-//         })
-//     }else{
-        
-//         return res.status(200).json({msg: 'exist card number!'});
-//     }
-// })
 
 router.get('/customer/receiving', async (req, res) => {
     const id_customer = req.token_payload.id;
@@ -232,18 +263,19 @@ router.get('/customer/receiving', async (req, res) => {
             ret.push(entity_ret_item);
         }else{
             const sender = await interbanks_model.get_info_customer(item.card_number_sender, item.id_partner_bank);
+            if(sender !== false){
+                const entity_ret_item = {
+                    _id: item._id,
+                    full_name: sender.info.clientName,
+                    card_number: item.card_number_sender,
+                    bank_name: sender.bank_name,
+                    money: item.money,
+                    message: item.message,
+                    date_created: item.date_created
+                }
 
-            const entity_ret_item = {
-                _id: item._id,
-                full_name: sender.info.clientName,
-                card_number: item.card_number_sender,
-                bank_name: sender.bank_name,
-                money: item.money,
-                message: item.message,
-                date_created: item.date_created
+                ret.push(entity_ret_item);
             }
-
-            ret.push(entity_ret_item);
         }
     })
     
@@ -278,18 +310,19 @@ router.get('/customer/sending', async (req, res) => {
             ret.push(entity_ret_item);
         }else{
             const receiver = await interbanks_model.get_info_customer(item.card_number_receiver, item.id_partner_bank);
+            if(receiver !== false){
+                const entity_ret_item = {
+                    _id: item._id,
+                    full_name: receiver.info.clientName,
+                    card_number: item.card_number_receiver,
+                    bank_name: receiver.bank_name,
+                    money: item.money,
+                    message: item.message,
+                    date_created: item.date_created
+                }
 
-            const entity_ret_item = {
-                _id: item._id,
-                full_name: receiver.info.clientName,
-                card_number: item.card_number_receiver,
-                bank_name: receiver.bank_name,
-                money: item.money,
-                message: item.message,
-                date_created: item.date_created
+                ret.push(entity_ret_item);
             }
-
-            ret.push(entity_ret_item);
         }
     })
 
@@ -363,18 +396,19 @@ router.get('/teller/receiving', async (req, res) => {
         if(item.id_partner_bank === 1){
             const card_sender = await cards_model.find_detail_by_card_number(item.card_number_sender);
             const sender = await customers_model.detail(card_sender.id_customer);
-            
-            const entity_ret_item = {
-                _id: item._id,
-                full_name: sender.full_name,
-                card_number: card_sender.card_number,
-                bank_name: "Noi Bo",
-                money: item.money,
-                message: item.message,
-                date_created: item.date_created
-            }
+            if(sender !== false){
+                const entity_ret_item = {
+                    _id: item._id,
+                    full_name: sender.full_name,
+                    card_number: card_sender.card_number,
+                    bank_name: "Noi Bo",
+                    money: item.money,
+                    message: item.message,
+                    date_created: item.date_created
+                }
 
-            ret.push(entity_ret_item);
+                ret.push(entity_ret_item);
+            }
         }
         else{
             const sender = await interbanks_model.get_info_customer(item.card_number_sender, item.id_partner_bank);
@@ -423,18 +457,19 @@ router.get('/teller/sending', async (req, res) => {
             ret.push(entity_ret_item);
         }else{
             const receiver = await interbanks_model.get_info_customer(item.card_number_receiver, item.id_partner_bank);
+            if(receiver !== false){
+                const entity_ret_item = {
+                    _id: item._id,
+                    full_name: receiver.info.clientName,
+                    card_number: item.card_number_receiver,
+                    bank_name: receiver.bank_name,
+                    money: item.money,
+                    message: item.message,
+                    date_created: item.date_created
+                }
 
-            const entity_ret_item = {
-                _id: item._id,
-                full_name: receiver.info.clientName,
-                card_number: item.card_number_receiver,
-                bank_name: receiver.bank_name,
-                money: item.money,
-                message: item.message,
-                date_created: item.date_created
+                ret.push(entity_ret_item);
             }
-
-            ret.push(entity_ret_item);
         }
     })
 

@@ -8,7 +8,7 @@ const config = require('../config/default.json');
 
 const cards_model = require('../models/cards.model');
 const customers_model = require('../models/customers.model');
-
+const interbanks_model = require('../models/interbanks.model');
 const adapter = new fileSync('./config/default.json');
 const db = low(adapter);
 
@@ -31,43 +31,22 @@ router.get('/customer', async (req, res) => {
 router.post('/customer/detail', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
         // return res.status(400).json({is_error: true});
-
-        //Tạo chữ kí để gọi api truy vấn thông tin của ngân hàng khác
-        const card_number = req.body.card_number;
-        const data = moment().unix() + JSON.stringify({accountID: card_number});
-        var signature = cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
-
-        await axios.get('https://wnc-api-banking.herokuapp.com/api/users', {
-            headers: {
-                'ts': moment().unix(),
-                'partner-code': req.body.id_partner_code,
-                'sign': signature
-            },
-            data: {
-                accountID: card_number
+        const customer = await interbanks_model.get_info_customer(req.body.card_number, req.body.partner_code);
+        
+        if(customer !== false){
+            const ret = {
+                full_name: customer.info.clientName,
+                phone_number: customer.info.phone,
+                email: customer.info.clientEmail,
+                card_number: customer.info.card_number,
+                bank_name: customer.bank_name
             }
-        }).then(response => {
-            if(response.data.length === 0){
-                return res.status(400).json({is_error: true});
-            }
-            else{
-                const id_partner_code = req.body.id_partner_code;
-                const customer = response.data[0];
-                const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === id_partner_code.toString());
 
-                const ret = {
-                    full_name: customer.clientName,
-                    phone_number: customer.phone,
-                    email: customer.clientEmail,
-                    card_number,
-                    bank_name: partner_bank[0].name
-                }
-
-                return res.status(200).json(ret);
-            }
-        }).catch(error => {
-            console.log(error)
-        })
+            res.status(200).json(ret);
+        }
+        else{
+            res.status(400).json({is_error: true})
+        }
     }else{
         const card = await cards_model.find_detail_by_card_number(req.body.card_number);
         const customer = await customers_model.detail(card.id_customer);
