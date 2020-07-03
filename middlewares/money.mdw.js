@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const config = require('../config/default.json');
 
 module.exports = function(req, res, next) {
+    console.log('body', req.body);
     const headerTs = req.headers['ts'];
     
     //
