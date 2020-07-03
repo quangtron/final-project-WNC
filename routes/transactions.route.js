@@ -514,7 +514,7 @@ router.get('/admin', async (req, res) => {
     const ret = [];
 
     const promises = transactions.map(async transaction => {
-        if(await cards_model.is_exist(transaction.card_number_sender) === false ){
+        /*if(await cards_model.is_exist(transaction.card_number_sender) === false ){
             const sender = await interbanks_model.get_info_customer(transaction.card_number_sender, transaction.id_partner_bank);
             const card_receiver = await cards_model.find_detail_by_card_number(transaction.card_number_receiver);
             const receiver = await customers_model.detail(card_receiver.id_customer);
@@ -543,6 +543,39 @@ router.get('/admin', async (req, res) => {
                 full_name_sender: sender.full_name,
                 card_number_sender: transaction.card_number_sender,
                 full_name_receiver: receiver.info.clientName,
+                card_number_receiver: transaction.card_number_receiver,
+                type_transaction: 'Chuyen Tien',
+                money: transaction.money,
+                message: transaction.message,
+                date_created: transaction.date_created
+            }
+
+            ret.push(entity_ret_item);
+        }*/
+
+        const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === transaction.id_partner_bank.toString());
+        const bank_name = partner_bank[0].name;
+
+        if(await cards_model.is_exist(transaction.card_number_sender) === false ){
+            const entity_ret_item = {
+                bank_name: bank_name,
+                // full_name_sender: sender.info.clientName,
+                card_number_sender: transaction.card_number_sender,
+                // full_name_receiver: receiver.full_name,
+                card_number_receiver: transaction.card_number_receiver,
+                type_transaction: 'Nhan Tien',
+                money: transaction.money,
+                message: transaction.message,
+                date_created: transaction.date_created
+            }
+
+            ret.push(entity_ret_item);
+        }else{
+            const entity_ret_item = {
+                bank_name: bank_name,
+                // full_name_sender: sender.full_name,
+                card_number_sender: transaction.card_number_sender,
+                // full_name_receiver: receiver.info.clientName,
                 card_number_receiver: transaction.card_number_receiver,
                 type_transaction: 'Chuyen Tien',
                 money: transaction.money,
