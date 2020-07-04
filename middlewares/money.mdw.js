@@ -16,7 +16,7 @@ module.exports = function(req, res, next) {
     }
     
     const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === partner_code.toString());
-    const public_key = partner_bank[0].your_public_key;
+    const public_key = partner_bank[0].your_rsa_public_key;
 
     const data = headerTs + JSON.stringify(req.body);
 

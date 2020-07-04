@@ -3,6 +3,10 @@ const config = require('../config/default.json');
 const moment = require('moment');
 const cryptoJS = require('crypto-js');
 const crypto = require('crypto');
+const openpgp = require('openpgp');
+
+const cards_model = require('../models/cards.model');
+const customers_model = require('../models/customers.model');
 
 module.exports = {
     get_info_customer: async (_card_number, _partner_code) => {
@@ -81,28 +85,38 @@ module.exports = {
             return ret;
         }
     },
-    transfer: async (_ts, _card_number, _partner_code, _money) => {
+    transfer: async (_ts, _card_number, _partner_code, _money, _message, _id_customer) => {
+        const card_detail_sender = await cards_model.find_payment_card_by_id_customer(_id_customer);
+        const sender = await customers_model.detail(_id_customer);
         let ret;
 
         if(_partner_code === 2){ //(PGP)
             //Tạo chữ kí 
-            const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === partner_code.toString());    
-            const privateKeyArmored = partner_bank[0].my_private_key;
-
-            const headerTs = moment().unix();
-            var data = _ts + JSON.stringify({accountID: _card_number, newBalance: _money});
-
-            //Create Sign to Compare
-            const sign = await cryptoJS.HmacSHA256(data, privateKeyArmored).toString();
-            // console.log(sign);
-            // console.log(headerTs);
-
+            const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === _partner_code.toString());    
+            const privateKeyArmored = partner_bank[0].my_pgp_private_key;
+            const passphrase = `nhom17`; // what the private key is encrypted with
+            
             const body = {
-                accountID: _card_number, newBalance: _money
+                accNumber: _card_number.toString(),
+                newBalance: _money.toString(),
+                message: _message,
+                senderName: sender.full_name,
+                senderNumber: card_detail_sender.card_number.toString()
             }
-
+    
+            const { keys: [privateKey] } = await openpgp.key.readArmored(privateKeyArmored);
+            await privateKey.decrypt(passphrase);
+    
+            const { data: cleartext } = await openpgp.sign({
+                message: openpgp.cleartext.fromText(JSON.stringify(body)), // CleartextMessage or Message object
+                privateKeys: [privateKey]                         // for signing
+            });
+    
+            var data = _ts + {cleartext};
+            const sign = cryptoJS.HmacSHA256(data, "secretKey").toString();
+    
             await axios.post('https://wnc-api-banking.herokuapp.com/api/RSATransfer',
-                body, 
+                {cleartext}, 
                 {
                     headers: {
                         'ts': _ts,
@@ -111,11 +125,14 @@ module.exports = {
                     }
                 }
             ).then(async response => {
-                if(response.data.status === 'OK'){ // thanh cong
-                    ret = true; 
-                }
-                else{
-                    ret = false;
+                let cleartext = response.data.cleartext;
+                let dataObj = cleartext.slice(
+                    cleartext.indexOf('{'),
+                    cleartext.indexOf('}') + 1
+                );
+                let data = JSON.parse(dataObj);
+                if(data.success === true){ // thanh cong
+                    ret = true;
                 }
             }).catch(error => {
                 ret = false;
@@ -124,7 +141,7 @@ module.exports = {
         else{ // (RSA)
             //Tạo chữ kí 
             const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === _partner_code.toString());    
-            const my_private_key = partner_bank[0].my_private_key;
+            const my_private_key = partner_bank[0].my_rsa_private_key;
             
             const body = {
                 card_number: _card_number, money: _money
@@ -148,7 +165,7 @@ module.exports = {
                 }
             ).then(async response => {
                 // Verify
-                const your_public_key = partner_bank[0].your_public_key;
+                const your_public_key = partner_bank[0].your_rsa_public_key;
                 const verify = crypto.createVerify('SHA256');
                 verify.write(response.data.msg);
                 verify.end();
@@ -159,7 +176,6 @@ module.exports = {
                 else{
                     ret = true;
                 }
-
             }).catch(error => {
                 ret = false;
             })

@@ -18,6 +18,7 @@ router.post('/customer/sending/add', async (req, res) => {
     const { card_number, money, type_paid, message, partner_code } = req.body;
     const id_customer = req.token_payload.id;
     const card_detail_sender = await cards_model.find_payment_card_by_id_customer(id_customer);
+    const sender = await customers_model.detail(id_customer);
 
     if(partner_code === 1){
         if(await cards_model.is_exist(card_number) === false){
@@ -59,83 +60,43 @@ router.post('/customer/sending/add', async (req, res) => {
 
         res.status(200).json(req.body);
     }
-    // else if(partner_code === 2){
-    //     let total_amount = money + config.account_default.card_maintenance_fee;
+    else if(partner_code === 2){
+        let total_amount = money + config.account_default.card_maintenance_fee;
 
-    //     if(type_paid === 1){
-    //         total_amount += config.account_default.transaction_fee;
-    //     }
+        if(type_paid === 1){
+            total_amount += config.account_default.transaction_fee;
+        }
 
-    //     if(card_detail_sender.balance < total_amount){
-    //         console.log('khong du tien');
-    //         return res.status(400).json({is_error: true});
-    //     }
+        if(card_detail_sender.balance < total_amount){
+            console.log('khong du tien');
+            return res.status(400).json({is_error: true});
+				}
+				
+        const headerTs = moment().unix();
 
-    //     //Tạo chữ kí 
-    //     const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === partner_code.toString());    
-    //     const privateKeyArmored = partner_bank[0].my_private_key;
-    //     const passphrase = `nhom17`; // what the private key is encrypted with
+				const transfer = await interbanks_model.transfer(headerTs, card_number, partner_code, money, message, id_customer);
 
-    //     const headerTs = moment().unix();
-    //     // var data = headerTs + JSON.stringify({accountID: card_number, newBalance: money});
+				if(transfer === true){ // thanh cong
+					card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
+			
+					await cards_model.edit({_id: card_detail_sender._id}, card_detail_sender);
 
-    //     const body = {
-    //         accountID: card_number.toString(), newBalance: money.toString()
-    //     }
+					await transactions_model.add({
+							...req.body,
+							card_number_sender: card_detail_sender.card_number,
+							card_number_receiver: card_number,
+							id_type_transaction: 1,
+							id_partner_bank: partner_code,
+							message,
+							date_created: moment().format('YYYY-MM-DD HH:mm:ss')
+					});
 
-    //     //Create Sign to Compare
-    //     const { keys: [privateKey] } = await openpgp.key.readArmored(privateKeyArmored);
-        
-    //     await privateKey.decrypt(passphrase);
-
-    //     const { data: cleartext } = await openpgp.sign({
-    //         message: openpgp.cleartext.fromText(JSON.stringify(body)), // CleartextMessage or Message object
-    //         privateKeys: [privateKey]                         // for signing
-    //     });
-
-    //     // console.log('data', cleartext);
-    //     var data = headerTs + JSON.stringify(body);
-    //     const sign = await cryptoJS.HmacSHA256(data, config.interbank.secretKey).toString();
-        
-    //     console.log(headerTs, sign);
-    //     // console.log(sign);
-    //     // console.log(headerTs);
-
-    //     await axios.post('https://wnc-api-banking.herokuapp.com/api/RSATransfer',
-    //         body, 
-    //         {
-    //             headers: {
-    //                 'ts': headerTs,
-    //                 'partner-code': partner_code,
-    //                 'sign': sign
-    //             }
-    //         }
-    //     ).then(async response => {
-    //         if(response.data.status === 'OK'){ // thanh cong
-    //             card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
-        
-    //             await cards_model.edit({_id: card_detail_sender._id}, card_detail_sender);
-        
-    //             await transactions_model.add({
-    //                 ...req.body,
-    //                 card_number_sender: card_detail_sender.card_number,
-    //                 card_number_receiver: card_number,
-    //                 id_type_transaction: 1,
-    //                 id_partner_bank: partner_code,
-    //                 message,
-    //                 date_created: moment().format('YYYY-MM-DD HH:mm:ss')
-    //             });
-        
-    //             res.status(200).json(req.body);        
-    //         }
-    //         else{
-    //             return res.status(400).json({is_error: true});
-    //         }
-    //     }).catch(error => {
-    //         // console.log('err12312312', error)
-    //         return res.status(400).json({is_error: true});
-    //     })
-    // }
+					res.status(200).json(req.body);
+			}
+			else{
+					return res.status(400).json({is_error: true});
+			}
+    }
     else{ // partner_code === 3 
         let total_amount = money + config.account_default.card_maintenance_fee;
 
@@ -150,7 +111,7 @@ router.post('/customer/sending/add', async (req, res) => {
 
         const headerTs = moment().unix();
 
-        const transfer = await interbanks_model.transfer(headerTs, card_number, partner_code, money);
+        const transfer = await interbanks_model.transfer(headerTs, card_number, partner_code, money, message, id_customer);
 
         if(transfer === true){ // thanh cong
             card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
@@ -173,67 +134,6 @@ router.post('/customer/sending/add', async (req, res) => {
         else{
             return res.status(400).json({is_error: true});
         }
-
-        //Tạo chữ kí 
-        // const partner_bank = config.interbank.partner_bank.filter(bank => bank.partner_code.toString() === partner_code.toString());    
-        // const my_private_key = partner_bank[0].my_private_key;
-        
-        // const body = {
-        //     card_number: card_number, money: money
-        // }
-
-        // const headerTs = moment().unix();
-        
-        // var data = headerTs + JSON.stringify(body);
-
-        // const sign = crypto.createSign('SHA256');
-
-        // sign.write(data); // đưa data cần kí vào đây
-        // const signature = sign.sign(my_private_key, 'hex'); // tạo chữ kí bằng private key
-        
-        // await axios.post('https://api-internet-banking-17.herokuapp.com/api/interbank/rsa-transfer',
-        //     body, 
-        //     {
-        //         headers: {
-        //             'ts': headerTs,
-        //             'partner-code': partner_code,
-        //             'sign': signature
-        //         }
-        //     }
-        // ).then(async response => {
-        //     // Verify
-        //     const your_public_key = partner_bank[0].your_public_key;
-        //     const verify = crypto.createVerify('SHA256');
-        //     verify.write(response.data.msg);
-        //     verify.end();
-            
-        //     if(!verify.verify(your_public_key, response.data.sign, 'hex')){ // truyen public key, chu ky vào để verify
-        //         res.status(503).json({msg: 'SIGNATURE IS WRONG!'});
-        //     }
-
-        //     // if(response.data.msg === 'SUCCESSED!'){ // thanh cong
-        //         card_detail_sender.balance -= total_amount - config.account_default.card_maintenance_fee;
-        
-        //         await cards_model.edit({_id: card_detail_sender._id}, card_detail_sender);
-        
-        //         await transactions_model.add({
-        //             ...req.body,
-        //             card_number_sender: card_detail_sender.card_number,
-        //             card_number_receiver: card_number,
-        //             id_type_transaction: 1,
-        //             id_partner_bank: partner_code,
-        //             message,
-        //             date_created: moment().format('YYYY-MM-DD HH:mm:ss')
-        //         });
-        
-        //         res.status(200).json(req.body);        
-        //     // }
-        //     // else{
-        //     //     return res.status(400).json({is_error: true});
-        //     // }
-        // }).catch(error => {
-        //     return res.status(400).json({is_error: true});
-        // })
     }
 })
 
