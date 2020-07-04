@@ -416,6 +416,7 @@ router.get("/admin", async (req, res) => {
       (await cards_model.is_exist(transaction.card_number_sender)) === false
     ) {
       const entity_ret_item = {
+        _id: transaction._id,
         bank_name: bank_name,
         card_number_sender: transaction.card_number_sender,
         card_number_receiver: transaction.card_number_receiver,
@@ -428,6 +429,7 @@ router.get("/admin", async (req, res) => {
       ret.push(entity_ret_item);
     } else {
       const entity_ret_item = {
+        _id: transaction._id,
         bank_name: bank_name,
         card_number_sender: transaction.card_number_sender,
         card_number_receiver: transaction.card_number_receiver,
@@ -465,6 +467,7 @@ router.post("/admin/partner-bank", async (req, res) => {
       (await cards_model.is_exist(transaction.card_number_sender)) === false
     ) {
       const entity_ret_item = {
+        _id: transaction._id,
         bank_name: bank_name,
         card_number_sender: transaction.card_number_sender,
         card_number_receiver: transaction.card_number_receiver,
@@ -477,6 +480,7 @@ router.post("/admin/partner-bank", async (req, res) => {
       ret.push(entity_ret_item);
     } else {
       const entity_ret_item = {
+        _id: transaction._id,
         bank_name: bank_name,
         card_number_sender: transaction.card_number_sender,
         card_number_receiver: transaction.card_number_receiver,
