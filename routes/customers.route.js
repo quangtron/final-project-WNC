@@ -62,6 +62,14 @@ router.get('/teller/detail/:id', async (req, res) => {
     return res.status(200).json(ret);
 })
 
+router.get('/teller/cards/:id', async (req, res) => {
+    const id = req.params.id;
+    
+    const ret = await cards_model.find_by_id_customer(id);
+
+    return res.status(200).json(ret);
+})
+
 router.post('/teller/add', async (req, res) => {
     // const {full_name, address, email, 
     //        phone_number, username, 
