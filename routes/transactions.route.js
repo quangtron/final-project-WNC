@@ -579,6 +579,7 @@ router.get("/detail/:id", async (req, res) => {
 			full_name_receiver = receiver.full_name;
 			
 			ret = {
+        _id: req.params.id,
 				bank_name,
 				full_name_sender,
 				card_number_sender: transaction.card_number_sender,
@@ -623,6 +624,7 @@ router.get("/detail/:id", async (req, res) => {
       }
 
       ret = {
+        _id: req.params.id,
         bank_name,
         full_name_sender,
         card_number_sender: transaction.card_number_sender,
@@ -651,6 +653,7 @@ router.get("/detail/:id", async (req, res) => {
 		full_name_receiver = receiver.full_name;
 		
     ret = {
+      _id: req.params.id,
       bank_name,
       full_name_sender,
       card_number_sender: transaction.card_number_sender,
