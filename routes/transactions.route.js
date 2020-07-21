@@ -563,33 +563,33 @@ router.get("/detail/:id", async (req, res) => {
   if (transaction.id_type_transaction === 1) {
     // CHUYEN KHOAN
     if (transaction.id_partner_bank === 1) {
-			// NOI BO
-			const card_sender = await cards_model.find_detail_by_card_number(
-				transaction.card_number_sender
-			);
-			const sender = await customers_model.detail(card_sender.id_customer);
-			
-			const card_receiver = await cards_model.find_detail_by_card_number(
-				transaction.card_number_receiver
-			);
-			const receiver = await customers_model.detail(card_receiver.id_customer);
-			
-			bank_name = 'Noi Bo';
-			full_name_sender = sender.full_name;
-			full_name_receiver = receiver.full_name;
-			
-			ret = {
+      // NOI BO
+      const card_sender = await cards_model.find_detail_by_card_number(
+        transaction.card_number_sender
+      );
+      const sender = await customers_model.detail(card_sender.id_customer);
+
+      const card_receiver = await cards_model.find_detail_by_card_number(
+        transaction.card_number_receiver
+      );
+      const receiver = await customers_model.detail(card_receiver.id_customer);
+
+      bank_name = "Noi Bo";
+      full_name_sender = sender.full_name;
+      full_name_receiver = receiver.full_name;
+
+      ret = {
         _id: req.params.id,
-				bank_name,
-				full_name_sender,
-				card_number_sender: transaction.card_number_sender,
-				full_name_receiver,
-				card_number_receiver: transaction.card_number_receiver,
-				type_transaction: 'Chuyen Khoan',
-				money: transaction.money,
-				message: transaction.message,
-				date_created: transaction.date_created,
-			};
+        bank_name,
+        full_name_sender,
+        card_number_sender: transaction.card_number_sender,
+        full_name_receiver,
+        card_number_receiver: transaction.card_number_receiver,
+        type_transaction: "Chuyen Khoan",
+        money: transaction.money,
+        message: transaction.message,
+        date_created: transaction.date_created,
+      };
     } else {
       //LIEN NGAN HANG
       if (
@@ -604,7 +604,7 @@ router.get("/detail/:id", async (req, res) => {
           transaction.card_number_receiver
         );
         receiver = await customers_model.detail(card_receiver.id_customer);
-
+        // console.log('sender', sender);
         bank_name = sender.bank_name;
         full_name_sender = sender.info.clientName;
         full_name_receiver = receiver.full_name;
@@ -617,7 +617,7 @@ router.get("/detail/:id", async (req, res) => {
           transaction.card_number_sender
         );
         sender = await customers_model.detail(card_sender.id_customer);
-
+        // console.log(receiver);
         bank_name = receiver.bank_name;
         full_name_sender = sender.full_name;
         full_name_receiver = receiver.info.clientName;
@@ -630,7 +630,7 @@ router.get("/detail/:id", async (req, res) => {
         card_number_sender: transaction.card_number_sender,
         full_name_receiver,
         card_number_receiver: transaction.card_number_receiver,
-        type_transaction: 'Chuyen Khoan',
+        type_transaction: "Chuyen Khoan",
         money: transaction.money,
         message: transaction.message,
         date_created: transaction.date_created,
@@ -648,10 +648,10 @@ router.get("/detail/:id", async (req, res) => {
     );
     const receiver = await customers_model.detail(card_receiver.id_customer);
 
-    bank_name = 'Noi Bo';
+    bank_name = "Noi Bo";
     full_name_sender = sender.full_name;
-		full_name_receiver = receiver.full_name;
-		
+    full_name_receiver = receiver.full_name;
+
     ret = {
       _id: req.params.id,
       bank_name,
@@ -659,14 +659,14 @@ router.get("/detail/:id", async (req, res) => {
       card_number_sender: transaction.card_number_sender,
       full_name_receiver,
       card_number_receiver: transaction.card_number_receiver,
-      type_transaction: 'Thanh Toan Nhac No',
+      type_transaction: "Thanh Toan Nhac No",
       money: transaction.money,
       message: transaction.message,
       date_created: transaction.date_created,
     };
-	}
-	
-	res.status(200).json(ret);
+  }
+
+  res.status(200).json(ret);
 });
 
 module.exports = router;

@@ -32,6 +32,7 @@ module.exports = {
                         'sign': signature
                     },
             }).then(response => {
+                 console.log('res', response.data);
                 if(response.data.length === 0){
                     ret = false;
                 }
