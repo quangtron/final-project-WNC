@@ -1,9 +1,7 @@
 const express = require("express");
 const moment = require("moment");
-const crypto = require("crypto");
-const cryptoJS = require("crypto-js");
-const openpgp = require("openpgp");
-const axios = require("axios");
+const mail = require('../middlewares/verify_email.mdw');
+const otp_email_model = require('../models/otp_email.model');
 
 const cards_model = require("../models/cards.model");
 const customers_model = require("../models/customers.model");
@@ -668,5 +666,48 @@ router.get("/detail/:id", async (req, res) => {
 
   res.status(200).json(ret);
 });
+
+router.post('/verify-email', async(req, res) => {
+  const token = Math.floor(Math.random() * 99999 + 10000);
+  
+  await otp_email_model.update_otp_token(token, req.body.email);
+
+  let mailOptions = {
+      from: 'webnangcao17@gmail.com',
+      to: req.body.email,
+      subject: 'Password Reset',
+      html: `Dear ${req.body.full_name},<br>
+          You have selected ${req.body.email} to verify your transaction.<br>
+          This is code for you:
+          <h2>${token}</h2>
+          This code will expire five minutes after this email was send.<br>
+          <b>Why you received this email.</b><br>
+          Internet banking requires verification an email adress for your transaction.<br>
+          If you did not make this request, you can ignore this email.<br>
+          Thank you!`
+  };
+
+  const ret = await mail.send_email(mailOptions);
+  
+  if(ret) {
+    return res.status(200).json(ret);
+  } else {
+    return res.json({is_error: true})
+  }
+});
+
+router.post('/verify-otp', async(req, res) => {
+  const otp_detail = await otp_email_model.find_by_token(req.body.token);
+
+  if(!otp_detail){
+    return res.json({is_error: true, message: 'OTP failed'})
+  }
+
+  if(Date.now() > otp_detail.otp_email_exprires){
+    return res.json({is_error: true, message: 'OTP expired'})
+  }
+
+  return res.status(200).json({message: 'Success'});
+})
 
 module.exports = router;
