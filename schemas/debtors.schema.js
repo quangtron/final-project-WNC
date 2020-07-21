@@ -6,7 +6,8 @@ const debtors = new mongoose.Schema({
     is_paid: Number, // 1: unpaid // 2: paid
     card_number: Number, 
     money: Number,
-    message: String
+    message: String,
+    is_delete: Number
 })
 
 module.exports = Debtors = mongoose.model('debtors', debtors);

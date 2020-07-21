@@ -6,7 +6,7 @@ const User_refresh_token = require('../schemas/user-refresh-token.shema');
 
 module.exports = {
     all: _ => {
-        return Customers.find()
+        return Customers.find({is_delete: 0})
     },
     detail: id => {
         return Customers.findById(id);
@@ -20,7 +20,8 @@ module.exports = {
         //     "username" : "truong",
         //     "password" : "123456",
         //     "day_of_birth" : "Nov 11 1998",
-        //     "permission" : 1
+        //     "permission" : 1,
+        //     "is_delete": 0
         // }
         const hash = bcrypt.hashSync(entity.password);
         entity.password = hash;
@@ -31,22 +32,23 @@ module.exports = {
         return Customers.update(condition, entity);
     },
     del: id => {
-        return Customers.findByIdAndRemove(id);
+        // return Customers.findByIdAndRemove(id);
+        return Customers.update({_id: id}, {is_delete: 1})
     },
     find_id_by_username: _username => {
-        return Customers.findOne({username: _username}).select('_id');
+        return Customers.findOne({username: _username, is_delete: 0}).select('_id');
     },
     find_by_username: _username => {
-        return Customers.findOne({username: _username});
+        return Customers.findOne({username: _username, is_delete: 0});
     },
     find_by_email: _email => {
-        return Customers.findOne({email: _email});
+        return Customers.findOne({email: _email, is_delete: 0});
     },
     find_by_id: id => {
-        return Customers.findOne({id: id});
+        return Customers.findOne({id: id, is_delete: 0});
     },
     update_refresh_token: async(id, token) => {
-        const id_refresh_token = await User_refresh_token.findOne({id_customer: id}).select('_id');
+        const id_refresh_token = await User_refresh_token.findOne({id_customer: id, is_delete: 0}).select('_id');
 
         await User_refresh_token.findByIdAndRemove(id_refresh_token);
 
@@ -68,15 +70,15 @@ module.exports = {
         return false;
     },
     all_customer: _ => {
-        return Customers.find({permission: 2});
+        return Customers.find({permission: 2, is_delete: 0});
     },
     all_teller: _ => {
-        return Customers.find({permission: 1});
+        return Customers.find({permission: 1, is_delete: 0});
     },
     is_exist: async _username => {
         let res = false;
 
-        const customer = await Customers.findOne({username: _username});
+        const customer = await Customers.findOne({username: _username, is_delete: 0});
 
         if(customer){
             return true;

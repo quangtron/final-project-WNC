@@ -47,7 +47,8 @@ router.post('/customer/add', async (req, res) => {
     const new_receiver = {
         id_customer: id_customer,
         card_number: req.body.card_number,
-        reminiscent_name: reminiscent_name
+        reminiscent_name: reminiscent_name,
+        is_delete: 0
     }
 
     const ret = await receivers_model.add(new_receiver);

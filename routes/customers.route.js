@@ -78,7 +78,7 @@ router.post('/teller/add', async (req, res) => {
         return res.status(400).json({is_error: true});
     }
 
-    const new_customer = {...req.body, permission: 2};
+    const new_customer = {...req.body, permission: 2, is_delete: 0};
     const customer = await customers_model.add(new_customer);
 
     await db.update('account_default.pre_card_number', n => n + 1).write();
@@ -89,6 +89,7 @@ router.post('/teller/add', async (req, res) => {
         id_type_card: 1,
         card_number: card_number_temp,
         balance: config.account_default.balance_default,
+        is_delete: 0
     }
 
     const card = await cards_model.add(entity_card);
@@ -109,7 +110,7 @@ router.post('/teller/edit/:id', async (req, res) => {
 router.post('/teller/delete/:id', async (req, res) => {
     const id = req.params.id;
 
-    const card = await cards_model.del_all_by_id_customer(id);
+    await cards_model.del_all_by_id_customer(id); 
     const ret = await customers_model.del(id);
     // const card = await cards_model.find_by_id_customer(id);
 
@@ -146,7 +147,8 @@ router.post('/admin/add', async (req, res) => {
         username,
         password,
         day_of_birth,
-        permission
+        permission,
+        is_delete: 0
     }
 
     const ret = await customers_model.add(new_teller);

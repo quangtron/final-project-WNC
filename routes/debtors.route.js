@@ -148,7 +148,8 @@ router.post('/add', async (req, res) => {
         is_paid: 1,
         card_number: req.body.card_number,
         money: req.body.money,
-        message: req.body.message
+        message: req.body.message,
+        is_delete: 0
     }
 
     const ret = await debtors_model.add(entity_new_debtor);

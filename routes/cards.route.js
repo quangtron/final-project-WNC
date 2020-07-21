@@ -77,6 +77,7 @@ router.post('/customer/saving/add', async (req, res) => {
         id_type_card: 2,
         card_number: card_number_temp,
         balance: req.body.money,
+        is_delete: 0
     }
 
     const ret = await cards_model.add(entity_card);
