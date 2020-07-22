@@ -19,17 +19,6 @@ router.post('/', async(req, res) => {
     
     const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number);
 
-    // if(rows.length === 0){
-    //     throw createError(400, 'Invalid card number!');
-    // }
-
-    // const cardNumber = req.body.cardNumber;
-    // const currentMoney = rows[0].Money;
-
-    // const money = currentMoney + req.body.amoundOfMoney;
-    
-    // const ret = await moneyModel.update(cardNumber, money);
-
     card_receiver.balance += req.body.money;
     await cards_model.edit({_id: card_receiver._id}, card_receiver);
 
