@@ -12,6 +12,12 @@ const db = low(adapter);
 
 const router = express.Router();
 
+// router.get('/', async (req, res) => {
+//     const ret = await customers_model.all();
+        
+//     return res.status(200).json(ret);
+// })
+
 router.get('/detail', async (req, res) => {
     const id = req.token_payload.id;
     
