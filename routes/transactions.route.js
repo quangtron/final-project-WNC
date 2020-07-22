@@ -1,7 +1,7 @@
 const express = require("express");
 const moment = require("moment");
-const mail = require('../middlewares/verify_email.mdw');
-const otp_email_model = require('../models/otp_email.model');
+const mail = require("../middlewares/verify_email.mdw");
+const otp_email_model = require("../models/otp_email.model");
 
 const cards_model = require("../models/cards.model");
 const customers_model = require("../models/customers.model");
@@ -22,7 +22,7 @@ router.post("/customer/sending/add", async (req, res) => {
 
   if (partner_code === 1) {
     if ((await cards_model.is_exist(card_number)) === false) {
-      return res.status(204).json({ is_error: true });
+      return res.status(204).json({ is_error: true, msg: "Số tài khoản không tồn tại!" });
     }
 
     let total_amount = money + config.account_default.card_maintenance_fee;
@@ -33,7 +33,7 @@ router.post("/customer/sending/add", async (req, res) => {
 
     if (card_detail_sender.balance < total_amount) {
       console.log("Balance is not enough!");
-      return res.status(400).json({ is_error: true });
+      return res.status(204).json({ is_error: true,  msg: "Số dư trong tài khoản không đủ!" });
     }
 
     card_detail_sender.balance -=
@@ -75,7 +75,7 @@ router.post("/customer/sending/add", async (req, res) => {
 
     if (card_detail_sender.balance < total_amount) {
       console.log("Balance is not enough!");
-      return res.status(400).json({ is_error: true });
+      return res.status(204).json({ is_error: true,  msg: "Số dư trong tài khoản không đủ!" });
     }
 
     const headerTs = moment().unix();
@@ -111,7 +111,7 @@ router.post("/customer/sending/add", async (req, res) => {
 
       res.status(200).json(req.body);
     } else {
-      return res.status(400).json({ is_error: true });
+      return res.status(204).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện giao dịch!" });
     }
   }
 });
@@ -232,7 +232,7 @@ router.post("/teller/sending/add", async (req, res) => {
   // const id_customer = req.token_payload.id;
 
   if ((await cards_model.is_exist(card_number)) === false) {
-    return res.status(204).json({ is_error: true });
+    return res.status(204).json({ is_error: true,  msg: "Số tài khoản không tồn tại!" });
   }
 
   const card_receiver = await cards_model.find_detail_by_card_number(
@@ -365,45 +365,6 @@ router.get("/admin", async (req, res) => {
   const ret = [];
 
   const promises = transactions.map(async (transaction) => {
-    /*if(await cards_model.is_exist(transaction.card_number_sender) === false ){
-            const sender = await interbanks_model.get_info_customer(transaction.card_number_sender, transaction.id_partner_bank);
-            const card_receiver = await cards_model.find_detail_by_card_number(transaction.card_number_receiver);
-            const receiver = await customers_model.detail(card_receiver.id_customer);
-
-            const entity_ret_item = {
-                bank_name: sender.bank_name,
-                full_name_sender: sender.info.clientName,
-                card_number_sender: transaction.card_number_sender,
-                full_name_receiver: receiver.full_name,
-                card_number_receiver: transaction.card_number_receiver,
-                type_transaction: 'Nhan Tien',
-                money: transaction.money,
-                message: transaction.message,
-                date_created: transaction.date_created
-            }
-
-            ret.push(entity_ret_item);
-        }
-        else{
-            const receiver = await interbanks_model.get_info_customer(transaction.card_number_receiver, transaction.id_partner_bank);
-            const card_sender = await cards_model.find_detail_by_card_number(transaction.card_number_sender);
-            const sender = await customers_model.detail(card_sender.id_customer);
-            
-            const entity_ret_item = {
-                bank_name: receiver.bank_name,
-                full_name_sender: sender.full_name,
-                card_number_sender: transaction.card_number_sender,
-                full_name_receiver: receiver.info.clientName,
-                card_number_receiver: transaction.card_number_receiver,
-                type_transaction: 'Chuyen Tien',
-                money: transaction.money,
-                message: transaction.message,
-                date_created: transaction.date_created
-            }
-
-            ret.push(entity_ret_item);
-        }*/
-
     const partner_bank = config.interbank.partner_bank.filter(
       (bank) =>
         bank.partner_code.toString() === transaction.id_partner_bank.toString()
@@ -497,62 +458,6 @@ router.post("/admin/partner-bank", async (req, res) => {
   res.status(200).json(ret);
 });
 
-// router.post('/admin/duration', async (req, res) => {
-//     const {start_time, end_time} = req.body;
-//     const transactions = await transactions_model.all_transactions_interbank();
-
-//     const ret = [];
-
-//     const promises = transactions.map(async transaction => {
-//         const date_created = moment(transaction.date_created).format('YYYY-MM-DD');
-
-//         if (moment(date_created).format('x') >= moment(start_time).format('x') && moment(date_created).format('x') <= moment(end_time).format('x')){
-//             if(await cards_model.is_exist(transaction.card_number_sender) === false ){
-//                 const sender = await interbanks_model.get_info_customer(transaction.card_number_sender, transaction.id_partner_bank);
-//                 const card_receiver = await cards_model.find_detail_by_card_number(transaction.card_number_receiver);
-//                 const receiver = await customers_model.detail(card_receiver.id_customer);
-
-//                 const entity_ret_item = {
-//                     bank_name: sender.bank_name,
-//                     full_name_sender: sender.info.clientName,
-//                     card_number_sender: transaction.card_number_sender,
-//                     full_name_receiver: receiver.full_name,
-//                     card_number_receiver: transaction.card_number_receiver,
-//                     type_transaction: 'Nhan Tien',
-//                     money: transaction.money,
-//                     message: transaction.message,
-//                     date_created: transaction.date_created
-//                 }
-
-//                 ret.push(entity_ret_item);
-//             }
-//             else{
-//                 const receiver = await interbanks_model.get_info_customer(transaction.card_number_receiver, transaction.id_partner_bank);
-//                 const card_sender = await cards_model.find_detail_by_card_number(transaction.card_number_sender);
-//                 const sender = await customers_model.detail(card_sender.id_customer);
-
-//                 const entity_ret_item = {
-//                     bank_name: receiver.bank_name,
-//                     full_name_sender: sender.full_name,
-//                     card_number_sender: transaction.card_number_sender,
-//                     full_name_receiver: receiver.info.clientName,
-//                     card_number_receiver: transaction.card_number_receiver,
-//                     type_transaction: 'Chuyen Tien',
-//                     money: transaction.money,
-//                     message: transaction.message,
-//                     date_created: transaction.date_created
-//                 }
-
-//                 ret.push(entity_ret_item);
-//             }
-//         }
-//     })
-
-//     await Promise.all(promises);
-
-//     res.status(200).json(ret);
-// })
-
 router.get("/detail/:id", async (req, res) => {
   const transaction = await transactions_model.detail(req.params.id);
   let ret;
@@ -597,6 +502,10 @@ router.get("/detail/:id", async (req, res) => {
           transaction.card_number_sender,
           transaction.id_partner_bank
         );
+        if (sender === false) {
+          console.log("Khong truy van duoc thong tin tu api cua doi tac!");
+          return res.status(204).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện truy vấn api từ đối tác!" });
+        }
 
         const card_receiver = await cards_model.find_detail_by_card_number(
           transaction.card_number_receiver
@@ -611,6 +520,12 @@ router.get("/detail/:id", async (req, res) => {
           transaction.card_number_receiver,
           transaction.id_partner_bank
         );
+
+        if (receiver === false) {
+          console.log("Khong truy van duoc thong tin tu api cua doi tac!");
+          return res.status(204).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện truy vấn từ api đối tác!" });
+        }
+
         const card_sender = await cards_model.find_detail_by_card_number(
           transaction.card_number_sender
         );
@@ -667,16 +582,16 @@ router.get("/detail/:id", async (req, res) => {
   res.status(200).json(ret);
 });
 
-router.post('/verify-email', async(req, res) => {
+router.post("/verify-email", async (req, res) => {
   const token = Math.floor(Math.random() * 99999 + 10000);
-  
+
   await otp_email_model.update_otp_token(token, req.body.email);
 
   let mailOptions = {
-      from: 'webnangcao17@gmail.com',
-      to: req.body.email,
-      subject: 'Password Reset',
-      html: `Dear ${req.body.full_name},<br>
+    from: "webnangcao17@gmail.com",
+    to: req.body.email,
+    subject: "Password Reset",
+    html: `Dear ${req.body.full_name},<br>
           You have selected ${req.body.email} to verify your transaction.<br>
           This is code for you:
           <h2>${token}</h2>
@@ -684,30 +599,30 @@ router.post('/verify-email', async(req, res) => {
           <b>Why you received this email.</b><br>
           Internet banking requires verification an email adress for your transaction.<br>
           If you did not make this request, you can ignore this email.<br>
-          Thank you!`
+          Thank you!`,
   };
 
   const ret = await mail.send_email(mailOptions);
-  
-  if(ret) {
+
+  if (ret) {
     return res.status(200).json(ret);
   } else {
-    return res.json({is_error: true})
+    return res.status(204).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi gửi email xác nhận!" });
   }
 });
 
-router.post('/verify-otp', async(req, res) => {
+router.post("/verify-otp", async (req, res) => {
   const otp_detail = await otp_email_model.find_by_token(req.body.token);
 
-  if(!otp_detail){
-    return res.json({is_error: true, message: 'OTP failed'})
+  if (!otp_detail) {
+    return res.status(204).json({ is_error: true, msg: "OTP không đúng!" });
   }
 
-  if(Date.now() > otp_detail.otp_email_exprires){
-    return res.json({is_error: true, message: 'OTP expired'})
+  if (Date.now() > otp_detail.otp_email_exprires) {
+    return res.status(204).json({ is_error: true, msg: "OTP hết hạn!" });
   }
 
-  return res.status(200).json({message: 'Success'});
-})
+  return res.status(200).json({ msg: "Thành công!" });
+});
 
 module.exports = router;

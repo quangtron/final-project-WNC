@@ -45,7 +45,7 @@ router.post('/customer/detail', async (req, res) => {
             res.status(200).json(ret);
         }
         else{
-            res.status(400).json({is_error: true})
+            res.status(204).json({is_error: true, msg: "Hệ thống gặp lỗi khi thực hiện truy vấn từ api đối tác!"})
         }
     }else{
         const card = await cards_model.find_detail_by_card_number(req.body.card_number);
@@ -65,7 +65,7 @@ router.post('/customer/detail', async (req, res) => {
 
 router.post('/customer/saving/add', async (req, res) => {
     if(isNaN(req.body.money) || req.body.money < 0){
-        return res.status(400).json({is_error: true});
+        return res.status(204).json({is_error: true, msg: "Số tiền không hợp lệ!"});
     }
     
     await db.update('account_default.saving_card_number', n => n + 1).write();
@@ -87,7 +87,7 @@ router.post('/customer/saving/add', async (req, res) => {
 
 router.post('/customer/edit/:id', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === true){
-        return res.status(400).json({is_error: true});
+        return res.status(204).json({is_error: true, msg: "Số tài khoản đã tồn tại!"});
     }
 
     const condition = {_id: req.params.id};

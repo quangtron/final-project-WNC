@@ -13,7 +13,7 @@ router.post('/send-email', async (req, res) => {
     const customer_reset = await customers_model.find_by_email(req.body.email);
     
     if(!customer_reset){
-        return res.status(204).json({is_error: true});
+        return res.status(204).json({is_error: true, msg: "Không tìm thấy email!"});
     }
 
     const token = rand_token.generate(config.auth.refresh_token_sz);
@@ -37,7 +37,7 @@ router.post('/send-email', async (req, res) => {
 
 router.post('/verify/:token', async (req, res) => {
     if(req.body.new_password !== req.body.confirm_password){
-        return res.status(204).json({is_error: true});
+        return res.status(204).json({is_error: true, msg: "Mật khẩu nhập lại không đúng!"});
     }
 
     const hash_password = bcrypt.hashSync(req.body.new_password);
@@ -45,18 +45,18 @@ router.post('/verify/:token', async (req, res) => {
     const reset_pw_detail = await otp_email_model.find_by_token(req.params.token);
 
     if(!reset_pw_detail){
-        return res.status(204).json({is_error: true});
+        return res.status(204).json({is_error: true, msg: "Token không đúng!"});
     }
 
     if(Date.now() > reset_pw_detail.otp_email_exprires){
-        return res.status(204).json({is_error: true});
+        return res.status(204).json({is_error: true, msg: "OTP hết hạn!"});
     }
 
 
     const customer_detail = await customers_model.find_by_email(reset_pw_detail.email);
 
     if(!customer_detail){
-        return res.status(204).json({is_error: true});
+        return res.status(204).json({is_error: true, msg: "Không tìm thấy tài khoản!"});
     }
 
     customer_detail.password = hash_password;

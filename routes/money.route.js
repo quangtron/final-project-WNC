@@ -13,7 +13,7 @@ const router = express.Router();
 router.post('/', async(req, res) => {
     // const rows = await moneyModel.singleByCardNumber(req.body.cardNumber);
     if(await cards_model.is_exist(req.body.card_number) === false){
-        res.status(400).json({is_error: true});
+        res.status(400).json({is_error: true, msg: "Số tài khoản không tồn tại!"});
         throw create_error(400, 'Number card is not exist!');
     }
     
