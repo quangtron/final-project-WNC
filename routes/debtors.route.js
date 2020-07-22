@@ -156,7 +156,7 @@ router.get("/others-sent/unpaid", async (req, res) => {
 router.post("/add", async (req, res) => {
   if ((await cards_model.is_exist(req.body.card_number)) === false) {
     return res
-      .status(204)
+      .status(203)
       .json({ is_error: true, msg: "Số tài khoản không tồn tại!" });
   }
   const entity_new_debtor = {
@@ -235,7 +235,7 @@ router.post("/transaction/reminding-debt/:id", async (req, res) => {
     config.account_default.transaction_fee;
 
   if (card_sender.balance < total_amount) {
-    return res.status(204).json({ is_error: true, msg: "Số dư trong tài khoản không đủ!"  });
+    return res.status(203).json({ is_error: true, msg: "Số dư trong tài khoản không đủ!"  });
   }
 
   card_sender.balance -=

@@ -31,7 +31,7 @@ router.get('/customer', async (req, res) => {
 
 router.post('/customer/add', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
-        return res.status(204).json({is_error: true,  msg: "Số tài khoản không tồn tại!"});
+        return res.status(203).json({is_error: true,  msg: "Số tài khoản không tồn tại!"});
     }
 
     const id_customer = req.token_payload.id;
@@ -58,7 +58,7 @@ router.post('/customer/add', async (req, res) => {
 
 router.post('/customer/edit/:id', async (req, res) => {
     if(await cards_model.is_exist(req.body.card_number) === false){
-        return res.status(204).json({is_error: true, msg: "Số tài khoản không tồn tại!"});
+        return res.status(203).json({is_error: true, msg: "Số tài khoản không tồn tại!"});
     }
     else{
         const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number);

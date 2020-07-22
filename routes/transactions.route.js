@@ -22,7 +22,7 @@ router.post("/customer/sending/add", async (req, res) => {
 
   if (partner_code === 1) {
     if ((await cards_model.is_exist(card_number)) === false) {
-      return res.status(204).json({ is_error: true, msg: "Số tài khoản không tồn tại!" });
+      return res.status(203).json({ is_error: true, msg: "Số tài khoản không tồn tại!" });
     }
 
     let total_amount = money + config.account_default.card_maintenance_fee;
@@ -33,7 +33,7 @@ router.post("/customer/sending/add", async (req, res) => {
 
     if (card_detail_sender.balance < total_amount) {
       console.log("Balance is not enough!");
-      return res.status(204).json({ is_error: true,  msg: "Số dư trong tài khoản không đủ!" });
+      return res.status(203).json({ is_error: true,  msg: "Số dư trong tài khoản không đủ!" });
     }
 
     card_detail_sender.balance -=
@@ -75,7 +75,7 @@ router.post("/customer/sending/add", async (req, res) => {
 
     if (card_detail_sender.balance < total_amount) {
       console.log("Balance is not enough!");
-      return res.status(204).json({ is_error: true,  msg: "Số dư trong tài khoản không đủ!" });
+      return res.status(203).json({ is_error: true,  msg: "Số dư trong tài khoản không đủ!" });
     }
 
     const headerTs = moment().unix();
@@ -111,7 +111,7 @@ router.post("/customer/sending/add", async (req, res) => {
 
       res.status(200).json(req.body);
     } else {
-      return res.status(204).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện giao dịch!" });
+      return res.status(203).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện giao dịch!" });
     }
   }
 });
@@ -232,7 +232,7 @@ router.post("/teller/sending/add", async (req, res) => {
   // const id_customer = req.token_payload.id;
 
   if ((await cards_model.is_exist(card_number)) === false) {
-    return res.status(204).json({ is_error: true,  msg: "Số tài khoản không tồn tại!" });
+    return res.status(203).json({ is_error: true,  msg: "Số tài khoản không tồn tại!" });
   }
 
   const card_receiver = await cards_model.find_detail_by_card_number(
@@ -504,7 +504,7 @@ router.get("/detail/:id", async (req, res) => {
         );
         if (sender === false) {
           console.log("Khong truy van duoc thong tin tu api cua doi tac!");
-          return res.status(204).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện truy vấn api từ đối tác!" });
+          return res.status(203).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện truy vấn api từ đối tác!" });
         }
 
         const card_receiver = await cards_model.find_detail_by_card_number(
@@ -523,7 +523,7 @@ router.get("/detail/:id", async (req, res) => {
 
         if (receiver === false) {
           console.log("Khong truy van duoc thong tin tu api cua doi tac!");
-          return res.status(204).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện truy vấn từ api đối tác!" });
+          return res.status(203).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi thực hiện truy vấn từ api đối tác!" });
         }
 
         const card_sender = await cards_model.find_detail_by_card_number(
@@ -607,7 +607,7 @@ router.post("/verify-email", async (req, res) => {
   if (ret) {
     return res.status(200).json(ret);
   } else {
-    return res.status(204).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi gửi email xác nhận!" });
+    return res.status(203).json({ is_error: true,  msg: "Hệ thống gặp lỗi khi gửi email xác nhận!" });
   }
 });
 
@@ -615,11 +615,11 @@ router.post("/verify-otp", async (req, res) => {
   const otp_detail = await otp_email_model.find_by_token(req.body.token);
 
   if (!otp_detail) {
-    return res.status(204).json({ is_error: true, msg: "OTP không đúng!" });
+    return res.status(203).json({ is_error: true, msg: "OTP không đúng!" });
   }
 
   if (Date.now() > otp_detail.otp_email_exprires) {
-    return res.status(204).json({ is_error: true, msg: "OTP hết hạn!" });
+    return res.status(203).json({ is_error: true, msg: "OTP hết hạn!" });
   }
 
   return res.status(200).json({ msg: "Thành công!" });

@@ -31,13 +31,13 @@ router.post('/change-password', async(req, res) => {
     const ret = await customers_model.detail(id);
 
     if(!bcrypt.compareSync(req.body.current_password, ret.password)){
-        return res.status(204).json({is_error: true, msg: "Mật khẩu hiện tại không đúng!"});
+        return res.status(203).json({is_error: true, msg: "Mật khẩu hiện tại không đúng!"});
     }
 
     const new_password = req.body.new_password;
 
     if(new_password !== req.body.confirm_password){
-        return res.status(204).json({is_error: true, msg: "Mật khẩu nhập lại không đúng!"});
+        return res.status(203).json({is_error: true, msg: "Mật khẩu nhập lại không đúng!"});
     }
 
     const new_password_hash = bcrypt.hashSync(new_password);
@@ -75,7 +75,7 @@ router.post('/teller/add', async (req, res) => {
     //        phone_number, username, 
     //        password, day_of_birth} = req.body;
     if(await customers_model.is_exist(req.body.username)){
-        return res.status(204).json({is_error: true, msg: "Tên đăng nhập đã tồn tại!"});
+        return res.status(203).json({is_error: true, msg: "Tên đăng nhập đã tồn tại!"});
     }
 
     const new_customer = {...req.body, permission: 2, is_delete: 0};
