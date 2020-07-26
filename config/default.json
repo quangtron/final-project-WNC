@@ -14,6 +14,7 @@
   },
   "account_default": {
     "pre_card_number": 5678900010,
+    "card_system": 9999999999,
     "balance_default": 100000,
     "saving_card_number": 9876500001,
     "card_maintenance_fee": 50000,

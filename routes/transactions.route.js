@@ -243,14 +243,26 @@ router.post("/teller/sending/add", async (req, res) => {
   await cards_model.edit({ _id: card_receiver._id }, card_receiver);
 
   // await transactions_model.add({
-  //     ...req.body,
-  //     id_customer,
-  //     id_type_transaction: 1,
-  //     id_partner_bank: 1,
-  //     date_created: moment().format('YYYY-MM-DD HH:mm:ss')
+  //     card_number_sender: Number,
+  //     id_type_transaction: Number,
+  //     id_partner_bank: Number,
+  //     card_number_receiver: Number,
+  //     message: String,
+  //     money: Number,
+  //     type_paid: Number,
+  //     date_created: Date
   // });
 
-  return res.status(200).json(req.body);
+  return res.status(200).json({
+    card_number_sender: config.account_default.card_system,
+    id_type_transaction: 1,
+    id_partner_bank: 1,
+    card_number_receiver: card_number,
+    message: 'Khách hàng nạp tiền',
+    money,
+    type_paid: 1,
+    date_created: moment().format("YYYY-MM-DD HH:mm:ss"),
+  });
 });
 
 router.post("/teller/receiving", async (req, res) => {
