@@ -26,7 +26,7 @@ router.post('/send-email', async (req, res) => {
         subject: 'Quên mật khẩu',
         text: 'Bạn nhận được email này bởi vì bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản của bạn.\n\n' +
             'Hãy nhấn vào link bên dưới hoặc, sao chép và dán link bên dưới vào trình duyệt để hoàn tất quy trình:\n\n' +
-            'http://localhost:3000/reset-password/' + token + '\n\n' +
+            'http://localhost:3000/reset-password?token=' + token + '\n\n' +
             'Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email và mật khẩu của bạn sẽ không thay đổi.\n'
     };
 
