@@ -4,6 +4,9 @@ const config = require('../config/default.json');
 
 let transport = nodemailer.createTransport({
     service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // upgrade later with STARTTLS
     auth: {
         user: config.email_otp.user,
         pass: config.email_otp.pass
