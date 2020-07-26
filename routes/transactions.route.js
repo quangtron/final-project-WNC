@@ -470,10 +470,16 @@ router.get("/detail/:id", async (req, res) => {
     // CHUYEN KHOAN
     if (transaction.id_partner_bank === 1) {
       // NOI BO
-      const card_sender = await cards_model.find_detail_by_card_number(
-        transaction.card_number_sender
-      );
-      const sender = await customers_model.detail(card_sender.id_customer);
+      if(transaction.card_number_sender === config.account_default.card_system){
+        full_name_sender = 'Hệ Thống';
+      }
+      else{
+        const card_sender = await cards_model.find_detail_by_card_number(
+          transaction.card_number_sender
+        );
+        const sender = await customers_model.detail(card_sender.id_customer);
+        full_name_sender = sender.full_name;
+      }
 
       const card_receiver = await cards_model.find_detail_by_card_number(
         transaction.card_number_receiver
@@ -481,7 +487,6 @@ router.get("/detail/:id", async (req, res) => {
       const receiver = await customers_model.detail(card_receiver.id_customer);
 
       bank_name = "Noi Bo";
-      full_name_sender = sender.full_name;
       full_name_receiver = receiver.full_name;
 
       ret = {
