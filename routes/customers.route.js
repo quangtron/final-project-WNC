@@ -78,6 +78,10 @@ router.post('/teller/add', async (req, res) => {
         return res.status(203).json({is_error: true, msg: "Tên đăng nhập đã tồn tại!"});
     }
 
+    if(await customers_model.find_by_email(req.body.email)){
+        return res.status(203).json({is_error: true, msg: "Email đã tồn tại!"});
+    }
+    
     const new_customer = {...req.body, permission: 2, is_delete: 0};
     const customer = await customers_model.add(new_customer);
 
@@ -137,6 +141,14 @@ router.post('/admin/add', async (req, res) => {
            phone_number, username, 
            password, day_of_birth} = req.body;
 
+    if(await customers_model.is_exist(req.body.username)){
+        return res.status(203).json({is_error: true, msg: "Tên đăng nhập đã tồn tại!"});
+    }
+    
+    if(await customers_model.find_by_email(req.body.email)){
+        return res.status(203).json({is_error: true, msg: "Email đã tồn tại!"});
+    }
+        
     const permission = 1;
 
     const new_teller = {
