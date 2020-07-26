@@ -593,7 +593,7 @@ router.get("/detail/:id", async (req, res) => {
 router.post("/verify-email", async (req, res) => {
   const token = Math.floor(Math.random() * 99999 + 10000);
 
-  await otp_email_model.update_otp_token(token, req.body.email);
+  await otp_email_model.update_otp_token(token.toString(), req.body.email);
 
   let mailOptions = {
     from: "webnangcao17@gmail.com",
