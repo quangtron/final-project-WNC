@@ -23,11 +23,11 @@ router.post('/send-email', async (req, res) => {
     let mailOptions = {
         from: config.email_otp.user,
         to: req.body.email,
-        subject: 'Password Reset',
-        text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
-            'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+        subject: 'Quên mật khẩu',
+        text: 'Bạn nhận được email này bởi vì bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản của bạn.\n\n' +
+            'Hãy nhấn vào link bên dưới hoặc, sao chép và dán link bên dưới vào trình duyệt để hoàn tất quy trình:\n\n' +
             'http://localhost:3000/reset-password/' + token + '\n\n' +
-            'If you did not request this, please ignore this email and your password will remain unchanged.\n'
+            'Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email và mật khẩu của bạn sẽ không thay đổi.\n'
     };
 
     const ret = await mail.send_email(mailOptions);

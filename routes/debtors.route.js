@@ -8,6 +8,7 @@ const cards_model = require("../models/cards.model");
 const debtors_model = require("../models/debtors.model");
 const notifications_cancel_debt_model = require("../models/notifications_cancel_debt.model");
 const transactions_model = require("../models/transactions.model");
+const mail = require("../middlewares/verify_email.mdw");
 const config = require("../config/default.json");
 
 const adapter = new fileSync("./config/default.json");
@@ -177,21 +178,41 @@ router.post("/delete/:id", async (req, res) => {
   const id_customer = req.token_payload.id;
   const id_debtor = req.params.id;
 
+  const customer = await customers_model.detail(id_customer);
+
   const card_customer = await cards_model.find_payment_card_by_id_customer(
     id_customer
   );
   const debtor = await debtors_model.detail(id_debtor);
+  let mailOptions;
+  const card_debtor = await cards_model.find_detail_by_card_number(
+    debtor.card_number
+  );
 
   if (id_customer.toString() === debtor.id_customer.toString()) {
     // them thong bao huy nhac no do minh tao
-    const card_debtor = await cards_model.find_detail_by_card_number(
-      debtor.card_number
-    );
+    
+
+    const receiver = await customers_model.detail(card_debtor.id_customer);
 
     const entity_new_notification_cancel_debt = {
       id_customer: card_debtor.id_customer,
       message: req.body.message,
       is_notified: 1,
+    };
+
+    mailOptions = {
+      from: "webnangcao17@gmail.com",
+      to: receiver.email,
+      subject: "Hủy nhắc nợ",
+      html: `Chào ${receiver.full_name},<br>
+            Khách hàng ${customer.full_name} có số tài khoản ${card_customer.card_number}. <br>
+            Đã hủy nợ (Số tiền ${debtor. money} VND và lời nhắn ${debtor.message}) cho bạn.<br>
+            Với lời nhắn ${req.body.message}.<br>
+            <b>Tại sao bạn nhận được email này?.</b><br>
+            Internet banking gửi thông báo đến hủy nhắc nợ đến email của bạn.<br>
+            Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.<br>
+            Cảm ơn!`,
     };
 
     await notifications_cancel_debt_model.add(
@@ -205,14 +226,41 @@ router.post("/delete/:id", async (req, res) => {
       is_notified: 1,
     };
 
+    const sender = await customers_model.detail(debtor.id_customer);
+
+    mailOptions = {
+      from: "webnangcao17@gmail.com",
+      to: customer.email,
+      subject: "Hủy nhắc nợ",
+      html: `Chào ${sender.full_name},<br>
+            Khách hàng ${customer.full_name} có số tài khoản ${card_debtor.card_number}. <br>
+            Đã hủy nợ (Số tiền ${debtor. money} VND và lời nhắn ${debtor.message}) của bạn.<br>
+            Với lời nhắn ${req.body.message}.<br>
+            <b>Tại sao bạn nhận được email này?.</b><br>
+            Internet banking gửi thông báo đến hủy nhắc nợ đến email của bạn.<br>
+            Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.<br>
+            Cảm ơn!`,
+    };
+
     await notifications_cancel_debt_model.add(
       entity_new_notification_cancel_debt
     );
   }
 
-  const ret = await debtors_model.del(id_debtor);
+  const checkMail = await mail.send_email(mailOptions);
 
-  return res.status(200).json(ret);
+  if (checkMail) {
+    const ret = await debtors_model.del(id_debtor);
+
+    return res.status(200).json(ret);
+  } else {
+    return res
+      .status(203)
+      .json({
+        is_error: true,
+        msg: "Hệ thống gặp lỗi khi gửi email xác nhận!",
+      });
+  }
 });
 
 router.post("/transaction/reminding-debt/:id", async (req, res) => {
@@ -235,7 +283,9 @@ router.post("/transaction/reminding-debt/:id", async (req, res) => {
     config.account_default.transaction_fee;
 
   if (card_sender.balance < total_amount) {
-    return res.status(203).json({ is_error: true, msg: "Số dư trong tài khoản không đủ!"  });
+    return res
+      .status(203)
+      .json({ is_error: true, msg: "Số dư trong tài khoản không đủ!" });
   }
 
   card_sender.balance -=

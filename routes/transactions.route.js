@@ -598,16 +598,16 @@ router.post("/verify-email", async (req, res) => {
   let mailOptions = {
     from: "webnangcao17@gmail.com",
     to: req.body.email,
-    subject: "Password Reset",
-    html: `Dear ${req.body.full_name},<br>
-          You have selected ${req.body.email} to verify your transaction.<br>
-          This is code for you:
+    subject: "Xác nhận giao dịch",
+    html: `Chào ${req.body.full_name},<br>
+          Bạn đã chọn email ${req.body.email} để xác minh giao dịch của bạn.<br>
+          Đây là mã xác nhận:
           <h2>${token}</h2>
-          This code will expire five minutes after this email was send.<br>
-          <b>Why you received this email.</b><br>
-          Internet banking requires verification an email adress for your transaction.<br>
-          If you did not make this request, you can ignore this email.<br>
-          Thank you!`,
+          Mã xác nhận này sẽ hết hạn sau 5 phút từ lúc email này được gửi.<br>
+          <b>Tại sao bạn nhận được email này?.</b><br>
+          Internet banking yêu cầu xác minh địa chỉ email cho giao dịch của bạn.<br>
+          Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.<br>
+          Cảm ơn!`,
   };
 
   const ret = await mail.send_email(mailOptions);
