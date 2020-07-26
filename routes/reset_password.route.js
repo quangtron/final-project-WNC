@@ -11,6 +11,8 @@ const router = express.Router();
 
 router.post('/send-email', async (req, res) => {
     const customer_reset = await customers_model.find_by_email(req.body.email);
+
+    res.json(customer_reset);
     
     if(!customer_reset){
         return res.status(203).json({is_error: true, msg: "Không tìm thấy email!"});
@@ -31,8 +33,8 @@ router.post('/send-email', async (req, res) => {
     };
 
     const ret = await mail.send_email(mailOptions);
-    console.log(ret);
-    res.json('ok');
+
+    res.status(200).json(ret);
 })
 
 router.post('/verify/:token', async (req, res) => {
