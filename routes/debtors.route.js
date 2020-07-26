@@ -192,7 +192,6 @@ router.post("/delete/:id", async (req, res) => {
   if (id_customer.toString() === debtor.id_customer.toString()) {
     // them thong bao huy nhac no do minh tao
     
-
     const receiver = await customers_model.detail(card_debtor.id_customer);
 
     const entity_new_notification_cancel_debt = {
@@ -207,7 +206,7 @@ router.post("/delete/:id", async (req, res) => {
       subject: "Hủy nhắc nợ",
       html: `Chào ${receiver.full_name},<br>
             Khách hàng ${customer.full_name} có số tài khoản ${card_customer.card_number}. <br>
-            Đã hủy nợ (Số tiền ${debtor. money} VND và lời nhắn ${debtor.message}) cho bạn.<br>
+            Đã hủy nợ (Số tiền ${debtor.money} VND và lời nhắn ${debtor.message}) cho bạn.<br>
             Với lời nhắn ${req.body.message}.<br>
             <b>Tại sao bạn nhận được email này?.</b><br>
             Internet banking gửi thông báo đến hủy nhắc nợ đến email của bạn.<br>
@@ -230,11 +229,11 @@ router.post("/delete/:id", async (req, res) => {
 
     mailOptions = {
       from: "webnangcao17@gmail.com",
-      to: customer.email,
+      to: sender.email,
       subject: "Hủy nhắc nợ",
       html: `Chào ${sender.full_name},<br>
             Khách hàng ${customer.full_name} có số tài khoản ${card_debtor.card_number}. <br>
-            Đã hủy nợ (Số tiền ${debtor. money} VND và lời nhắn ${debtor.message}) của bạn.<br>
+            Đã hủy nợ (Số tiền ${debtor.money} VND và lời nhắn ${debtor.message}) của bạn.<br>
             Với lời nhắn ${req.body.message}.<br>
             <b>Tại sao bạn nhận được email này?.</b><br>
             Internet banking gửi thông báo đến hủy nhắc nợ đến email của bạn.<br>
