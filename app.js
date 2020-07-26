@@ -42,6 +42,9 @@ app.use('/transactions', verify_token, require('./routes/transactions.route'));
 //debtors
 app.use('/debtors', verify_token, require('./routes/debtors.route'));
 
+//notifications cancel debt
+app.use('/notifications-cancel-debt', verify_token, require('./routes/notifications_cancel_debt.route'));
+
 app.use((req, res, next) => {
     res.status(404).send('NOT FOUND');
 });
