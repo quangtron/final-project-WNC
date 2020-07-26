@@ -590,17 +590,23 @@ router.get("/detail/:id", async (req, res) => {
   res.status(200).json(ret);
 });
 
-router.post("/verify-email", async (req, res) => {
+router.get("/verify-email", async (req, res) => {
   const token = Math.floor(Math.random() * 99999 + 10000);
 
-  await otp_email_model.update_otp_token(token.toString(), req.body.email);
+  const cus_detail = await customers_model.detail(req.token_payload.id);
+
+  if(!cus_detail) {
+    return res.status(203).json({is_error: true, msg: 'Hệ thống gặp lỗi!'});
+  }
+
+  await otp_email_model.update_otp_token(token.toString(), cus_detail.email);
 
   let mailOptions = {
     from: "webnangcao17@gmail.com",
-    to: req.body.email,
+    to: cus_detail.email,
     subject: "Xác nhận giao dịch",
-    html: `Chào ${req.body.full_name},<br>
-          Bạn đã chọn email ${req.body.email} để xác minh giao dịch của bạn.<br>
+    html: `Chào ${cus_detail.full_name},<br>
+          Bạn đã chọn email ${cus_detail.email} để xác minh giao dịch của bạn.<br>
           Đây là mã xác nhận:
           <h2>${token}</h2>
           Mã xác nhận này sẽ hết hạn sau 5 phút từ lúc email này được gửi.<br>

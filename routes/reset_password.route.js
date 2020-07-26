@@ -49,7 +49,7 @@ router.post('/verify/:token', async (req, res) => {
     }
 
     if(Date.now() > reset_pw_detail.otp_email_exprires){
-        return res.status(203).json({is_error: true, msg: "OTP hết hạn!"});
+        return res.status(203).json({is_error: true, msg: "Token hết hạn!"});
     }
 
 

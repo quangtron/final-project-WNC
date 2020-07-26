@@ -18,7 +18,7 @@ module.exports = {
         const entity = {
             email: _email,
             otp_email_token: _token,
-            otp_email_exprires: Date.now() + 30000
+            otp_email_exprires: Date.now() + 180000
         }
 
         return await Otp_email.create(entity);
