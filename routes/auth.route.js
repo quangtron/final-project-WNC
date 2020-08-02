@@ -27,7 +27,8 @@ router.post('/', async (req, res) => {
     return res.json({
         access_token,
         refresh_token,
-        permission: ret.permission
+        permission: ret.permission,
+        id: ret._id
     })
 })
 
