@@ -169,9 +169,38 @@ router.post("/add", async (req, res) => {
     is_delete: 0,
   };
 
-  const ret = await debtors_model.add(entity_new_debtor);
+  const sender = await customers_model.detail(req.token_payload.id);
+  const card_sender = await cards_model.find_payment_card_by_id_customer(req.token_payload.id);
+  const card_receiver = await cards_model.find_detail_by_card_number(req.body.card_number);
+  const receiver = await customers_model.detail(card_receiver.id_customer);
 
-  return res.status(200).json(ret);
+  const mailOptions = {
+    from: "webnangcao17@gmail.com",
+    to: receiver.email,
+    subject: "Nhắc nợ",
+    html: `Chào ${receiver.full_name},<br>
+          Khách hàng ${sender.full_name} có số tài khoản ${card_sender.card_number}. <br>
+          Đã nhắc nợ bạn (Số tiền ${req.body.money} VND và lời nhắn ${req.body.message}).<br>
+          <b>Tại sao bạn nhận được email này?.</b><br>
+          Internet banking gửi thông báo nhắc nợ đến email của bạn.<br>
+          Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.<br>
+          Cảm ơn!`,
+  };
+
+  const checkMail = await mail.send_email(mailOptions);
+
+  if (checkMail) {
+    const ret = await debtors_model.add(entity_new_debtor);
+
+    return res.status(200).json(ret);
+  } else {
+    return res
+      .status(203)
+      .json({
+        is_error: true,
+        msg: "Hệ thống gặp lỗi khi gửi thông báo tới email!",
+      });
+  }
 });
 
 router.post("/delete/:id", async (req, res) => {

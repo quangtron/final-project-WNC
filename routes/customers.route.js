@@ -144,7 +144,7 @@ router.post('/admin/add', async (req, res) => {
     if(await customers_model.is_exist(req.body.username)){
         return res.status(203).json({is_error: true, msg: "Tên đăng nhập đã tồn tại!"});
     }
-    
+
     if(await customers_model.find_by_email(req.body.email)){
         return res.status(203).json({is_error: true, msg: "Email đã tồn tại!"});
     }
@@ -171,7 +171,7 @@ router.post('/admin/add', async (req, res) => {
 router.post('/admin/edit/:id', async (req, res) => {
     const condition = {_id: req.params.id};
     const entity = req.body;
-
+    
     const ret = await customers_model.edit(condition, entity);
 
     return res.status(200).json(ret);
