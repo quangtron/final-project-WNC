@@ -47,6 +47,8 @@ router.post('/customer/detail', async (req, res) => {
         else{
             res.status(203).json({is_error: true, msg: "Hệ thống gặp lỗi khi thực hiện truy vấn từ api đối tác!"})
         }
+        
+        res.status(203).json({is_error: true, msg: "Số tài khoản không tồn tại!"});
     }else{
         const card = await cards_model.find_detail_by_card_number(req.body.card_number);
         const customer = await customers_model.detail(card.id_customer);
