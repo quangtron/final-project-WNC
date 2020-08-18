@@ -31,66 +31,28 @@ router.get("/customer", async (req, res) => {
 });
 
 router.post("/customer/add", async (req, res) => {
-    if(req.body.partner_code === 1){
-        if ((await cards_model.is_exist(req.body.card_number)) === false) {
-            // return res.status(400).json({is_error: true});
-            res
-              .status(203)
-              .json({ is_error: true, msg: "Số tài khoản không tồn tại!" });
-          } else {
-            const id_customer = req.token_payload.id;
-            const card_receiver = await cards_model.find_detail_by_card_number(
-              req.body.card_number
-            );
-            const receiver = await customers_model.detail(card_receiver.id_customer);
-        
-            var reminiscent_name = req.body.reminiscent_name;
-        
-            if (req.body.reminiscent_name === "") {
-              reminiscent_name = receiver.full_name;
-            }
-        
-            const new_receiver = {
-              id_customer: id_customer,
-              card_number: req.body.card_number,
-              reminiscent_name: reminiscent_name,
-              is_delete: 0,
-            };
-        
-            const ret = await receivers_model.add(new_receiver);
-        
-            return res.status(200).json(ret);
-          }
-    }else{
-        const customer = await interbanks_model.get_info_customer(
-            req.body.card_number,
-            req.body.partner_code
-          );
-      
-          if (customer !== false) {
-            var reminiscent_name = req.body.reminiscent_name;
-      
-            if (req.body.reminiscent_name === "") {
-              reminiscent_name = customer.info.clientName;
-            }
-      
-            const new_receiver = {
-              id_customer: req.token_payload.id,
-              card_number: req.body.card_number,
-              reminiscent_name: reminiscent_name,
-              is_delete: 0,
-            };
-      
-            const ret = await receivers_model.add(new_receiver);
-      
-            res.status(200).json(ret);
-          } else {
-            res
-              .status(203)
-              .json({ is_error: true, msg: "Hệ thống gặp lỗi khi truy vấn thông tin từ api đối tác!" });
-          }
-    }
-  
+  const id_customer = req.token_payload.id;
+  // const card_receiver = await cards_model.find_detail_by_card_number(
+  //   req.body.card_number
+  // );
+  // const receiver = await customers_model.detail(card_receiver.id_customer);
+
+  // var reminiscent_name = req.body.reminiscent_name;
+
+  // if (req.body.reminiscent_name === "") {
+  //   reminiscent_name = receiver.full_name;
+  // }
+
+  const new_receiver = {
+    id_customer: id_customer,
+    card_number: req.body.card_number,
+    reminiscent_name: req.body.reminiscent_name,
+    is_delete: 0,
+  };
+
+  const ret = await receivers_model.add(new_receiver);
+
+  return res.status(200).json(ret);
 });
 
 router.post("/customer/edit/:id", async (req, res) => {
